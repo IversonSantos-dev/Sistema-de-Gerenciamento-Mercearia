@@ -56,3 +56,7 @@
 - [x] Criar layout de comprovante térmico não fiscal para venda e fechamento de caixa.
 - [x] Adicionar comandos de prévia e impressão pelo navegador nas telas de venda e fechamento.
 - [x] Validar o conteúdo e o layout de impressão em formato térmico.
+- [x] Remover a guia e a rota independentes de importação de planilha.
+- [x] Adicionar a opção de importar planilha dentro da ação de cadastrar produto.
+- [x] Preservar prévia, validação, mapeamento e importação para o Supabase no fluxo integrado.
+- [x] Validar a nova organização da tela de produtos em desktop e mobile.

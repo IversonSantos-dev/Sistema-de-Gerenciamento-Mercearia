@@ -13,3 +13,5 @@ O comando manual **Sincronizar vendas** foi revisado no cabeçalho da frente de 
 A tela de fechamento de caixa foi revisada em desktop e mobile. Os quatro meios de pagamento, os campos conferidos, as diferenças, as observações, o resumo geral e o histórico continuam visíveis e utilizáveis em uma largura de 375 px.
 
 Os comprovantes foram configurados como prévia de 80 mm com folha de impressão isolada, usando apenas os dados persistidos de venda ou fechamento. A visualização é aberta após a confirmação da venda ou do fechamento, e o comando de impressão do último fechamento fica disponível no cabeçalho financeiro.
+
+A tela de produtos foi revisada em desktop e mobile depois da centralização da importação. A guia independente foi removida da navegação; o botão **Cadastrar produto** e o estado vazio passam a oferecer, em um único ponto, cadastro manual ou importação de planilha com as validações existentes.

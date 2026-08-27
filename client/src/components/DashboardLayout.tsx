@@ -5,7 +5,6 @@ import {
   Archive,
   CalendarCheck2,
   ChevronRight,
-  FileSpreadsheet,
   LayoutDashboard,
   LogOut,
   PackageSearch,
@@ -25,7 +24,6 @@ const navigation = [
   { label: "Visão geral", path: "/", icon: LayoutDashboard },
   { label: "Ponto de venda", path: "/pdv", icon: ReceiptText },
   { label: "Produtos", path: "/produtos", icon: PackageSearch },
-  { label: "Importar planilha", path: "/importar", icon: FileSpreadsheet },
   { label: "Estoque baixo", path: "/estoque", icon: AlertTriangle },
   { label: "Fechamento", path: "/fechamento", icon: CalendarCheck2 },
 ];
