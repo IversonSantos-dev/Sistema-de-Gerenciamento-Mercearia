@@ -22,6 +22,16 @@ const productInput = z.object({
   active: z.boolean().optional(),
 });
 
+const inventoryImportItem = z.object({
+  rowNumber: z.number().int().positive(),
+  inventoryCode: z.string().trim().min(1).max(64),
+  barcode: z.string().trim().regex(/^\d{12,13}$/).optional().nullable(),
+  name: z.string().trim().min(2).max(255),
+  unit: z.enum(["un", "kg"]),
+  stockCurrent: z.number().min(0).max(999999999),
+  unitPrice: z.number().positive().max(999999999),
+});
+
 function errorMessage(error: unknown) {
   if (error instanceof Error && error.message) return error.message;
   return "Não foi possível concluir esta operação.";
@@ -57,6 +67,15 @@ export const commerceRouter = router({
           return await commerce.updateProduct(input.id, input.data);
         } catch (error) {
           throw new TRPCError({ code: "CONFLICT", message: errorMessage(error) });
+        }
+      }),
+    importInventory: protectedProcedure
+      .input(z.object({ items: z.array(inventoryImportItem).min(1).max(1200), stockMinimum: z.number().min(0).max(999999999) }))
+      .mutation(async ({ input }) => {
+        try {
+          return await commerce.importInventory(input.items, input.stockMinimum);
+        } catch (error) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: errorMessage(error) });
         }
       }),
   }),

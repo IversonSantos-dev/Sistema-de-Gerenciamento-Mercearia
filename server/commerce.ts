@@ -34,6 +34,16 @@ export type SalePayload = {
   amountPaid?: number;
 };
 
+export type InventoryImportRow = {
+  rowNumber: number;
+  inventoryCode: string;
+  barcode?: string | null;
+  name: string;
+  unit: "un" | "kg";
+  stockCurrent: number;
+  unitPrice: number;
+};
+
 const toNumber = (value: number | string | null | undefined) => Number(value ?? 0);
 const money = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 const quantity = (value: number) => Math.round((value + Number.EPSILON) * 1000) / 1000;
@@ -107,6 +117,62 @@ export async function updateProduct(id: number, input: ProductPayload) {
 
   await db.update(products).set(productValues(input)).where(eq(products.id, id));
   return { id };
+}
+
+export async function importInventory(items: InventoryImportRow[], stockMinimum: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível.");
+
+  const codes = Array.from(new Set(items.map(item => item.inventoryCode).filter(Boolean)));
+  const barcodes = Array.from(new Set(items.map(item => item.barcode).filter((barcode): barcode is string => Boolean(barcode))));
+  if (codes.length !== items.length) throw new Error("A importação contém códigos internos duplicados.");
+  if (barcodes.length !== items.filter(item => item.barcode).length) throw new Error("A importação contém códigos de barras duplicados.");
+  const existing = await db
+    .select()
+    .from(products)
+    .where(or(inArray(products.inventoryCode, codes), ...(barcodes.length ? [inArray(products.barcode, barcodes)] : [])));
+
+  const existingByCode = new Map(existing.filter(product => product.inventoryCode).map(product => [product.inventoryCode!, product]));
+  const existingByBarcode = new Map(existing.filter(product => product.barcode).map(product => [product.barcode!, product]));
+  const errors: Array<{ rowNumber: number; message: string }> = [];
+  let created = 0;
+  let updated = 0;
+
+  await db.transaction(async tx => {
+    for (const item of items) {
+      const byCode = existingByCode.get(item.inventoryCode);
+      const byBarcode = item.barcode ? existingByBarcode.get(item.barcode) : undefined;
+      if (byCode && byBarcode && byCode.id !== byBarcode.id) {
+        errors.push({ rowNumber: item.rowNumber, message: "O código interno e o código de barras correspondem a produtos diferentes." });
+        continue;
+      }
+      const existingProduct = byCode ?? byBarcode;
+      const commonValues = {
+        name: item.name.trim(),
+        unit: item.unit,
+        stockCurrent: quantity(item.stockCurrent).toFixed(3),
+        inventoryCode: item.inventoryCode,
+        barcode: item.barcode?.trim() || null,
+        active: true,
+      };
+
+      if (existingProduct) {
+        await tx.update(products).set({ ...commonValues, salePrice: money(item.unitPrice).toFixed(2) }).where(eq(products.id, existingProduct.id));
+        updated += 1;
+      } else {
+        await tx.insert(products).values({
+          ...commonValues,
+          description: null,
+          costPrice: money(item.unitPrice).toFixed(2),
+          salePrice: money(item.unitPrice).toFixed(2),
+          stockMinimum: quantity(stockMinimum).toFixed(3),
+        });
+        created += 1;
+      }
+    }
+  });
+
+  return { created, updated, rejected: errors.length, errors: errors.slice(0, 30) };
 }
 
 export async function listLowStockProducts() {

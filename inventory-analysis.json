@@ -1,0 +1,288 @@
+{
+  "totalRows": 891,
+  "detectedRecords": 868,
+  "units": [
+    [
+      "UN",
+      796
+    ],
+    [
+      "KG",
+      51
+    ],
+    [
+      "PARES",
+      10
+    ],
+    [
+      "CX",
+      3
+    ],
+    [
+      "PT",
+      3
+    ],
+    [
+      "L",
+      3
+    ],
+    [
+      "RL",
+      2
+    ]
+  ],
+  "firstRecords": [
+    {
+      "row": 6,
+      "code": "3923",
+      "barcode": "7909937375324",
+      "name": "12303 - RIDER FEEL DEDO AD.",
+      "unit": "PARES",
+      "quantity": "12.000",
+      "unitPrice": "32.5",
+      "total": "390.00"
+    },
+    {
+      "row": 8,
+      "code": "4761",
+      "barcode": "7900204782067",
+      "name": "12621 - RIDER R1 BRASIL DEDO AD.",
+      "unit": "PARES",
+      "quantity": "6.000",
+      "unitPrice": "36.3",
+      "total": "217.80"
+    },
+    {
+      "row": 10,
+      "code": "4541",
+      "barcode": "7900204609319",
+      "name": "27398 - IPANEMA GLOW AD.",
+      "unit": "UN",
+      "quantity": "12.000",
+      "unitPrice": "32",
+      "total": "384.00"
+    },
+    {
+      "row": 11,
+      "code": "4301",
+      "barcode": "7896221800115",
+      "name": "ÁGUA OXIGENADA MÁRCIA 70ML - 40 VOLUMES - UN",
+      "unit": "UN",
+      "quantity": "21.000",
+      "unitPrice": "3.5",
+      "total": "73.50"
+    },
+    {
+      "row": 12,
+      "code": "184",
+      "barcode": "7890875705093",
+      "name": "IPANEMA HAPPY FEM AD",
+      "unit": "PARES",
+      "quantity": "12.000",
+      "unitPrice": "30",
+      "total": "360.00"
+    },
+    {
+      "row": 14,
+      "code": "4733",
+      "barcode": "7891000410493",
+      "name": "ALPINO Chocolate 4(16x80g) BR",
+      "unit": "UN",
+      "quantity": "6.000",
+      "unitPrice": "12.9",
+      "total": "77.40"
+    },
+    {
+      "row": 15,
+      "code": "2413",
+      "barcode": "7891000350119",
+      "name": "ALPINO Cookie Gotas Choc 52x60g BR",
+      "unit": "UN",
+      "quantity": "12.000",
+      "unitPrice": "3.7",
+      "total": "44.40"
+    },
+    {
+      "row": 16,
+      "code": "815",
+      "barcode": "7891035041006",
+      "name": "ALV LIQ VANISH S/CLORO MULT SACHET 4100 12X500 ML",
+      "unit": "UN",
+      "quantity": "2.000",
+      "unitPrice": "14.9",
+      "total": "29.80"
+    },
+    {
+      "row": 17,
+      "code": "4071",
+      "barcode": "7891150048492",
+      "name": "AMAC COMFORT 500ML CONC ORIG L500 P400",
+      "unit": "UN",
+      "quantity": "3.000",
+      "unitPrice": "15.9",
+      "total": "47.70"
+    },
+    {
+      "row": 18,
+      "code": "2395",
+      "barcode": "7506195143872",
+      "name": "AMAC ROUPA CONC DOWNY 500ML FR FRESC PRIMAVERA(E)",
+      "unit": "UN",
+      "quantity": "2.000",
+      "unitPrice": "16.5",
+      "total": "33.00"
+    },
+    {
+      "row": 19,
+      "code": "2231",
+      "barcode": "7891522027131",
+      "name": "ISABABY FRALDA PREMIUM JUMBO G 8X28 REF2713$",
+      "unit": "UN",
+      "quantity": "15.000",
+      "unitPrice": "25.9",
+      "total": "388.50"
+    },
+    {
+      "row": 20,
+      "code": "2232",
+      "barcode": "7891522027148",
+      "name": "ISABABY FRALDA PREMIUM JUMBO XG 8X24 REF2714$",
+      "unit": "UN",
+      "quantity": "16.000",
+      "unitPrice": "25.9",
+      "total": "414.40"
+    },
+    {
+      "row": 21,
+      "code": "4577",
+      "barcode": "7891522027155",
+      "name": "ISABABY FRALDA PREMIUM JUMBO XXG 20UN  R2715",
+      "unit": "UN",
+      "quantity": "16.000",
+      "unitPrice": "25.9",
+      "total": "414.40"
+    },
+    {
+      "row": 22,
+      "code": "4367",
+      "barcode": "7891991009171",
+      "name": "ANTARCTICA PILSEN LT 473ML SH C/12 NPAL",
+      "unit": "UN",
+      "quantity": "12.000",
+      "unitPrice": "5.4",
+      "total": "64.80"
+    },
+    {
+      "row": 23,
+      "code": "4721",
+      "barcode": "7898344752807",
+      "name": "ANTIPULGAS CAO/GATO INVICTO 11,4MG DECHR",
+      "unit": "UN",
+      "quantity": "5.000",
+      "unitPrice": "26.5",
+      "total": "132.50"
+    },
+    {
+      "row": 24,
+      "code": "2493",
+      "barcode": "7500435186698",
+      "name": "AP B PREST GIL U GRIP C/24+02PREST3 CHAMP(E)",
+      "unit": "UN",
+      "quantity": "53.000",
+      "unitPrice": "4.95",
+      "total": "262.35"
+    },
+    {
+      "row": 25,
+      "code": "2245",
+      "barcode": "7890018071894",
+      "name": "AP BARB PRESTOBARBA ULTRAG 24UN FEM ALOE VERA(E)",
+      "unit": "UN",
+      "quantity": "16.000",
+      "unitPrice": "4.5",
+      "total": "72.00"
+    },
+    {
+      "row": 26,
+      "code": "3612",
+      "barcode": "7501009222736",
+      "name": "AP BARB PRESTOBARBA ULTRAG 2UN CAB FIXA(E)",
+      "unit": "UN",
+      "quantity": "12.000",
+      "unitPrice": "7.95",
+      "total": "95.40"
+    },
+    {
+      "row": 27,
+      "code": "4729",
+      "barcode": "7500435253673",
+      "name": "AP BARB PRESTOBARBA-3 CT 12UN CARVAO ATIVADO(E)",
+      "unit": "UN",
+      "quantity": "9.000",
+      "unitPrice": "6.9",
+      "total": "62.10"
+    },
+    {
+      "row": 28,
+      "code": "4430",
+      "barcode": "7500435253680",
+      "name": "AP BARB PRESTOBARBA-3 CT 12UN CHAMPIONS(E)",
+      "unit": "UN",
+      "quantity": "20.000",
+      "unitPrice": "6.9",
+      "total": "138.00"
+    }
+  ],
+  "lastRecords": [
+    {
+      "row": 879,
+      "code": "4285",
+      "barcode": "7897476616162",
+      "name": "STARSCHOOL LAPISEIRA STYLE 0.7MM  A2400  24X1 615707",
+      "unit": "UN",
+      "quantity": "24.000",
+      "unitPrice": "5",
+      "total": "120.00"
+    },
+    {
+      "row": 880,
+      "code": "4212",
+      "barcode": "7898707282262",
+      "name": "SORVETE 1,5L/720 G DUETO MORANGO E LEITE CONDENSADO LUIGI",
+      "unit": "UN",
+      "quantity": "12.000",
+      "unitPrice": "29.9",
+      "total": "358.80"
+    },
+    {
+      "row": 881,
+      "code": "4637",
+      "barcode": "7898707282279",
+      "name": "SORVETE 1,5L/720 G DUETO UVA E CHANTILLY LUIGI",
+      "unit": "UN",
+      "quantity": "4.000",
+      "unitPrice": "29.9",
+      "total": "119.60"
+    },
+    {
+      "row": 882,
+      "code": "4213",
+      "barcode": "7898707282286",
+      "name": "SORVETE 1,5L/720 G MOUSSE TRIO TROPICAL LUIGI",
+      "unit": "UN",
+      "quantity": "12.000",
+      "unitPrice": "29.9",
+      "total": "358.80"
+    },
+    {
+      "row": 883,
+      "code": "2799",
+      "barcode": "7896045105335",
+      "name": "TORNADO LARANJA 2L MP SCH 10X20X15G",
+      "unit": "UN",
+      "quantity": "381.000",
+      "unitPrice": "1",
+      "total": "381.00"
+    }
+  ]
+}

@@ -25,6 +25,7 @@ export const products = mysqlTable(
     unit: mysqlEnum("unit", ["un", "kg"]).notNull(),
     stockCurrent: decimal("stockCurrent", { precision: 14, scale: 3 }).notNull().default("0.000"),
     stockMinimum: decimal("stockMinimum", { precision: 14, scale: 3 }).notNull().default("0.000"),
+    inventoryCode: varchar("inventoryCode", { length: 64 }).unique(),
     barcode: varchar("barcode", { length: 32 }).unique(),
     active: boolean("active").notNull().default(true),
     createdAt: timestamp("createdAt").defaultNow().notNull(),

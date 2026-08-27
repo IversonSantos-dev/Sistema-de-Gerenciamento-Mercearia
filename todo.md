@@ -15,3 +15,8 @@
 - [x] Criar e executar testes unitários para operações críticas de estoque, vendas e cálculos do carrinho.
 - [x] Validar visualmente as telas em formatos de desktop e mobile, corrigindo problemas encontrados.
 - [x] Ajustar a listagem de produtos para apresentar cartões acessíveis e completos em telas móveis.
+- [x] Analisar a estrutura e os campos disponíveis na planilha XLS de inventário fornecida.
+- [x] Implementar o upload e o processamento seguro de planilhas XLS/XLSX para produtos.
+- [x] Mapear e validar campos de produto, preços, unidade, estoque e código de barras antes da importação.
+- [x] Criar interface de importação com resumo de registros criados, atualizados e rejeitados.
+- [x] Testar a importação com a planilha fornecida e registrar os resultados.
