@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { calculateCartTotals, calculateCashDifferences } from "./commerce";
+import { calculateCartTotals, calculateCashDifferences, calculateStockAdjustment } from "./commerce";
+import { buildCatalogQueryInput, stepStockQuantity } from "../client/src/lib/catalogControls";
 
 describe("calculateCartTotals", () => {
   it("soma itens unitários e fracionados com precisão monetária", () => {
@@ -49,5 +50,29 @@ describe("calculateCashDifferences", () => {
 
     expect(result.cash).toBe(0.1);
     expect(result.total).toBe(0.1);
+  });
+});
+
+describe("calculateStockAdjustment", () => {
+  it("informa a entrada ao aumentar o estoque de um produto unitário", () => {
+    expect(calculateStockAdjustment(8, 15)).toEqual({ previousQuantity: 8, resultingQuantity: 15, adjustmentQuantity: 7 });
+  });
+
+  it("preserva três casas decimais no ajuste de mercadoria vendida por peso", () => {
+    expect(calculateStockAdjustment(2.125, 1.42)).toEqual({ previousQuantity: 2.125, resultingQuantity: 1.42, adjustmentQuantity: -0.705 });
+  });
+});
+
+describe("catalog controls", () => {
+  it("envia o filtro de categoria selecionado junto à busca textual", () => {
+    expect(buildCatalogQueryInput("  arroz  ", "12")).toEqual({ search: "arroz", categoryId: 12 });
+    expect(buildCatalogQueryInput("", "all")).toEqual({ search: undefined, categoryId: undefined });
+  });
+
+  it("acumula os toques no ajuste rápido e impede estoque negativo", () => {
+    expect(stepStockQuantity("7", 5, 1)).toBe(8);
+    expect(stepStockQuantity("8", 5, 1)).toBe(9);
+    expect(stepStockQuantity("0", 5, -1)).toBe(0);
+    expect(stepStockQuantity("", 2.125, -0.001)).toBe(2.124);
   });
 });

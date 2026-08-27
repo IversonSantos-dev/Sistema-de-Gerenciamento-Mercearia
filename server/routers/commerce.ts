@@ -75,8 +75,8 @@ export const commerceRouter = router({
   }),
   products: router({
     list: protectedProcedure
-      .input(z.object({ search: z.string().trim().max(120).optional() }).optional())
-      .query(async ({ input }) => commerce.listProducts(input?.search)),
+      .input(z.object({ search: z.string().trim().max(120).optional(), categoryId: z.number().int().positive().optional() }).optional())
+      .query(async ({ input }) => commerce.listProducts(input?.search, input?.categoryId)),
     lowStock: protectedProcedure.query(() => commerce.listLowStockProducts()),
     byBarcode: protectedProcedure
       .input(z.object({ barcode: z.string().trim().min(1).max(32) }))
@@ -95,6 +95,15 @@ export const commerceRouter = router({
           return await commerce.updateProduct(input.id, input.data);
         } catch (error) {
           throw new TRPCError({ code: "CONFLICT", message: errorMessage(error) });
+        }
+      }),
+    adjustStock: protectedProcedure
+      .input(z.object({ productId: z.number().int().positive(), newQuantity: z.number().min(0).max(999999999), reason: z.string().trim().max(300).optional() }))
+      .mutation(async ({ input, ctx }) => {
+        try {
+          return await commerce.adjustProductStock({ ...input, adjustedBy: ctx.user.id });
+        } catch (error) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: errorMessage(error) });
         }
       }),
     importInventory: protectedProcedure

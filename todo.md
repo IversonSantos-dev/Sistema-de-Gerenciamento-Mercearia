@@ -65,3 +65,14 @@
 - [x] Aplicar o estoque mínimo da categoria automaticamente, preservando ajustes específicos do produto.
 - [x] Ampliar alertas visuais de estoque baixo nas telas de produtos, estoque e painel operacional.
 - [x] Testar o cálculo de reposição por categoria e validar os alertas em desktop e mobile.
+- [x] Criar uma operação segura de ajuste manual de estoque com motivo e registro de movimentação.
+- [x] Adicionar filtro de categoria ao catálogo, combinado à busca por nome e código de barras.
+- [x] Criar controle rápido de ajuste de estoque diretamente em cada produto da listagem.
+- [x] Exibir confirmação e atualizar alertas de estoque imediatamente após o ajuste.
+- [x] Testar ajuste, filtragem e responsividade da listagem de produtos.
+- [x] Corrigir o controle incremental de ajuste para usar o valor atual informado pelo operador.
+- [x] Ampliar testes determinísticos para validações de filtro e ajuste de estoque.
+- [x] Registrar validação funcional específica dos controles de filtro e ajuste rápido.
+- [x] Corrigir o controle incremental de ajuste para usar o valor atual informado pelo operador.
+- [x] Ampliar testes determinísticos para validações de filtro e ajuste de estoque.
+- [x] Registrar validação funcional específica dos controles de filtro e ajuste rápido.

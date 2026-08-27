@@ -14,6 +14,13 @@ export type ProductPayload = {
   active?: boolean;
 };
 
+export type StockAdjustmentPayload = {
+  productId: number;
+  newQuantity: number;
+  reason?: string;
+  adjustedBy: number;
+};
+
 export type SalePayload = {
   items: Array<{ productId: number; quantity: number }>;
   paymentMethod: "dinheiro" | "debito" | "credito" | "pix";
@@ -180,6 +187,12 @@ export function calculateCashDifferences(summary: CashSummary, counted: Pick<Cas
   return { cash, debit, credit, pix, total: money(cash + debit + credit + pix) };
 }
 
+export function calculateStockAdjustment(previousQuantity: number, resultingQuantity: number) {
+  const previous = quantity(previousQuantity);
+  const resulting = quantity(resultingQuantity);
+  return { previousQuantity: previous, resultingQuantity: resulting, adjustmentQuantity: quantity(resulting - previous) };
+}
+
 function mapCashSummary(value: Record<string, unknown>, closureDate: string): CashSummary {
   return {
     closureDate: String(value.closureDate ?? closureDate),
@@ -192,11 +205,12 @@ function mapCashSummary(value: Record<string, unknown>, closureDate: string): Ca
   };
 }
 
-export async function listProducts(search?: string) {
+export async function listProducts(search?: string, categoryId?: number) {
   const supabase = getSupabase();
   const term = search ? safeSearchTerm(search) : "";
   let query = supabase.from("products").select("*").order("name", { ascending: true });
   if (term) query = query.or(`name.ilike.%${term}%,barcode.ilike.%${term}%,inventory_code.ilike.%${term}%`);
+  if (categoryId) query = query.eq("category_id", categoryId);
   const [{ data, error }, categories] = await Promise.all([query, listCategories()]);
   ensureSupabaseSuccess(error);
   const categoryMap = new Map(categories.map(category => [category.id, { id: category.id, name: category.name, stock_minimum: category.stockMinimum, created_at: category.createdAt, updated_at: category.updatedAt }]));
@@ -239,6 +253,24 @@ export async function updateProduct(id: number, input: ProductPayload) {
   const { error } = await getSupabase().from("products").update(productValues(input)).eq("id", id);
   ensureSupabaseSuccess(error);
   return { id };
+}
+
+export async function adjustProductStock(input: StockAdjustmentPayload) {
+  const { data, error } = await getSupabase().rpc("adjust_product_stock", {
+    p_product_id: input.productId,
+    p_new_quantity: quantity(input.newQuantity),
+    p_reason: input.reason?.trim() || "Ajuste manual de estoque",
+    p_user_id: input.adjustedBy,
+  });
+  ensureSupabaseSuccess(error);
+  const result = (typeof data === "string" ? JSON.parse(data) : data ?? {}) as Record<string, unknown>;
+  return {
+    productId: Number(result.productId),
+    ...calculateStockAdjustment(
+    toNumber(result.previousQuantity as string | number),
+    toNumber(result.resultingQuantity as string | number),
+    ),
+  };
 }
 
 export async function importInventory(items: InventoryImportRow[], stockMinimum: number) {
