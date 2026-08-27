@@ -76,3 +76,11 @@
 - [x] Corrigir o controle incremental de ajuste para usar o valor atual informado pelo operador.
 - [x] Ampliar testes determinísticos para validações de filtro e ajuste de estoque.
 - [x] Registrar validação funcional específica dos controles de filtro e ajuste rápido.
+- [ ] Levantar o protocolo de rede e o padrão de código de barras da balança escolhida.
+- [ ] Definir e implementar a integração de etiquetas de peso/preço ao fluxo do PDV após validar o modelo da balança.
+- [x] Criar um padrão configurável para códigos de etiqueta com PLU, preço total e dígito verificador.
+- [x] Preparar o reconhecimento de etiquetas de peso variável sem alterar a leitura atual de EAN/UPC.
+- [x] Exibir o modo de etiqueta preparado, porém desativado, até a definição do modelo da balança.
+- [x] Testar a decodificação de etiquetas e documentar os dados necessários para a ativação futura.
+- [x] Integrar a detecção de etiquetas configuradas ao leitor do PDV com fallback para EAN/UPC convencional.
+- [x] Validar o produto por PLU e a compatibilidade entre total impresso, preço e peso antes de incluir a etiqueta no carrinho.

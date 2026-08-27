@@ -13,6 +13,7 @@ export type ProductRecord = {
   categoryId?: number | null;
   usesCategoryMinimum?: boolean;
   category?: { id: number; name: string; stockMinimum: string | number } | null;
+  scalePlu?: number | null;
   inventoryCode?: string | null;
   barcode: string | null;
   active: boolean;
@@ -28,6 +29,7 @@ export type ProductFormValues = {
   stockMinimum: string;
   categoryId: string;
   useCategoryMinimum: boolean;
+  scalePlu: string;
   barcode: string;
 };
 
@@ -41,6 +43,7 @@ export const emptyProductForm: ProductFormValues = {
   stockMinimum: "",
   categoryId: "",
   useCategoryMinimum: false,
+  scalePlu: "",
   barcode: "",
 };
 
@@ -55,6 +58,7 @@ export function productToForm(product: ProductRecord): ProductFormValues {
     stockMinimum: String(product.stockMinimum),
     categoryId: product.categoryId ? String(product.categoryId) : "",
     useCategoryMinimum: Boolean(product.usesCategoryMinimum),
+    scalePlu: product.scalePlu ? String(product.scalePlu) : "",
     barcode: product.barcode ?? "",
   };
 }

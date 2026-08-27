@@ -20,6 +20,7 @@ const productInput = z.object({
   stockMinimum: z.number().min(0),
   categoryId: z.number().int().positive().nullable().optional(),
   useCategoryMinimum: z.boolean().optional(),
+  scalePlu: z.number().int().positive().max(999999).nullable().optional(),
   barcode: barcodeSchema,
   active: z.boolean().optional(),
 });
@@ -81,6 +82,9 @@ export const commerceRouter = router({
     byBarcode: protectedProcedure
       .input(z.object({ barcode: z.string().trim().min(1).max(32) }))
       .query(({ input }) => commerce.getProductByBarcode(input.barcode)),
+    byScalePlu: protectedProcedure
+      .input(z.object({ scalePlu: z.number().int().positive().max(999999) }))
+      .query(({ input }) => commerce.getProductByScalePlu(input.scalePlu)),
     create: protectedProcedure.input(productInput).mutation(async ({ input }) => {
       try {
         return await commerce.createProduct(input);
@@ -115,6 +119,9 @@ export const commerceRouter = router({
           throw new TRPCError({ code: "BAD_REQUEST", message: errorMessage(error) });
         }
       }),
+  }),
+  scale: router({
+    barcodeSettings: protectedProcedure.query(() => commerce.getScaleBarcodeSettings()),
   }),
   sales: router({
     recent: protectedProcedure.query(() => commerce.listRecentSales()),

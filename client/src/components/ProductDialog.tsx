@@ -45,9 +45,10 @@ export function ProductDialog({ open, product, onOpenChange }: ProductDialogProp
       stockMinimum: Number(form.stockMinimum),
       categoryId: form.categoryId ? Number(form.categoryId) : null,
       useCategoryMinimum: form.categoryId ? form.useCategoryMinimum : false,
+      scalePlu: form.scalePlu ? Number(form.scalePlu) : null,
       barcode: form.barcode,
     };
-    if (!Number.isFinite(data.costPrice) || !Number.isFinite(data.salePrice) || !Number.isFinite(data.stockCurrent) || !Number.isFinite(data.stockMinimum)) {
+    if (!Number.isFinite(data.costPrice) || !Number.isFinite(data.salePrice) || !Number.isFinite(data.stockCurrent) || !Number.isFinite(data.stockMinimum) || (data.scalePlu !== null && (!Number.isInteger(data.scalePlu) || data.scalePlu < 1 || data.scalePlu > 999999))) {
       toast.error("Preencha preço e estoque com valores numéricos válidos.");
       return;
     }
@@ -86,6 +87,7 @@ export function ProductDialog({ open, product, onOpenChange }: ProductDialogProp
             <Label htmlFor="product-barcode" className="flex items-center gap-2 text-[#254b3b]"><Barcode className="size-4" /> Código de barras</Label>
             <Input id="product-barcode" inputMode="numeric" value={form.barcode} onChange={e => setField("barcode", e.target.value.replace(/[^0-9]/g, ""))} placeholder="Bipe ou informe EAN-13 / UPC" className="mt-2 h-11 bg-white font-mono tracking-wide" />
             <p className="mt-2 text-xs text-[#66796b]">Leitores USB/Bluetooth em modo teclado preenchem este campo diretamente.</p>
+            <div className="mt-4 border-t border-[#dbe6d7] pt-4"><Label htmlFor="product-scale-plu" className="text-xs text-[#345241]">PLU da balança <span className="font-normal text-muted-foreground">(opcional, para etiquetas futuras)</span></Label><Input id="product-scale-plu" inputMode="numeric" maxLength={6} value={form.scalePlu} onChange={e => setField("scalePlu", e.target.value.replace(/[^0-9]/g, ""))} placeholder="Ex.: 12345" className="mt-1.5 h-10 bg-white font-mono"/></div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2"><Label htmlFor="product-cost">Preço de custo</Label><Input id="product-cost" type="number" min="0" step="0.01" inputMode="decimal" value={form.costPrice} onChange={e => setField("costPrice", e.target.value)} placeholder="0,00" className="h-11" /></div>

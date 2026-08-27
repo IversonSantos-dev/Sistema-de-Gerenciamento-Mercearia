@@ -1,4 +1,5 @@
 import { ensureSupabaseSuccess, getSupabase } from "./supabase";
+import type { ScaleBarcodeConfig } from "../shared/scaleBarcode";
 
 export type ProductPayload = {
   name: string;
@@ -10,6 +11,7 @@ export type ProductPayload = {
   stockMinimum: number;
   categoryId?: number | null;
   useCategoryMinimum?: boolean;
+  scalePlu?: number | null;
   barcode?: string | null;
   active?: boolean;
 };
@@ -69,6 +71,7 @@ type SupabaseProduct = {
   stock_minimum: string | number;
   category_id: number | null;
   use_category_minimum: boolean;
+  scale_plu: number | null;
   inventory_code: string | null;
   barcode: string | null;
   active: boolean;
@@ -130,6 +133,7 @@ function mapProduct(product: SupabaseProduct, categories = new Map<number, Supab
     effectiveStockMinimum,
     categoryId: product.category_id,
     usesCategoryMinimum: product.use_category_minimum,
+    scalePlu: product.scale_plu,
     category: category ? mapCategory(category) : null,
     inventoryCode: product.inventory_code,
     barcode: product.barcode,
@@ -163,6 +167,7 @@ function productValues(input: ProductPayload) {
     stock_minimum: quantity(input.stockMinimum),
     ...(input.categoryId !== undefined ? { category_id: input.categoryId } : {}),
     ...(input.useCategoryMinimum !== undefined ? { use_category_minimum: input.useCategoryMinimum } : {}),
+    ...(input.scalePlu !== undefined ? { scale_plu: input.scalePlu } : {}),
     barcode: input.barcode?.trim() || null,
     active: input.active ?? true,
     updated_at: new Date().toISOString(),
@@ -222,6 +227,26 @@ export async function getProductByBarcode(barcode: string) {
   ensureSupabaseSuccess(error);
   const categoryMap = new Map(categories.map(category => [category.id, { id: category.id, name: category.name, stock_minimum: category.stockMinimum, created_at: category.createdAt, updated_at: category.updatedAt }]));
   return data ? mapProduct(data as SupabaseProduct, categoryMap) : null;
+}
+
+export async function getProductByScalePlu(scalePlu: number) {
+  const [{ data, error }, categories] = await Promise.all([getSupabase().from("products").select("*").eq("scale_plu", scalePlu).eq("active", true).maybeSingle(), listCategories()]);
+  ensureSupabaseSuccess(error);
+  const categoryMap = new Map(categories.map(category => [category.id, { id: category.id, name: category.name, stock_minimum: category.stockMinimum, created_at: category.createdAt, updated_at: category.updatedAt }]));
+  return data ? mapProduct(data as SupabaseProduct, categoryMap) : null;
+}
+
+export async function getScaleBarcodeSettings(): Promise<ScaleBarcodeConfig> {
+  const { data, error } = await getSupabase().from("scale_barcode_settings").select("*").eq("id", 1).single();
+  ensureSupabaseSuccess(error);
+  return {
+    enabled: Boolean(data.enabled),
+    prefix: String(data.prefix),
+    pluDigits: Number(data.plu_digits),
+    amountDigits: Number(data.amount_digits),
+    amountKind: "total_price",
+    includesCheckDigit: Boolean(data.includes_check_digit),
+  };
 }
 
 export async function listCategories() {
