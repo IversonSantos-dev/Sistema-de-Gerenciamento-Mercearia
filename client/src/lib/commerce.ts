@@ -9,6 +9,10 @@ export type ProductRecord = {
   unit: Unit;
   stockCurrent: string | number;
   stockMinimum: string | number;
+  effectiveStockMinimum?: string | number;
+  categoryId?: number | null;
+  usesCategoryMinimum?: boolean;
+  category?: { id: number; name: string; stockMinimum: string | number } | null;
   inventoryCode?: string | null;
   barcode: string | null;
   active: boolean;
@@ -22,6 +26,8 @@ export type ProductFormValues = {
   unit: Unit;
   stockCurrent: string;
   stockMinimum: string;
+  categoryId: string;
+  useCategoryMinimum: boolean;
   barcode: string;
 };
 
@@ -33,6 +39,8 @@ export const emptyProductForm: ProductFormValues = {
   unit: "un",
   stockCurrent: "",
   stockMinimum: "",
+  categoryId: "",
+  useCategoryMinimum: false,
   barcode: "",
 };
 
@@ -45,6 +53,8 @@ export function productToForm(product: ProductRecord): ProductFormValues {
     unit: product.unit,
     stockCurrent: String(product.stockCurrent),
     stockMinimum: String(product.stockMinimum),
+    categoryId: product.categoryId ? String(product.categoryId) : "",
+    useCategoryMinimum: Boolean(product.usesCategoryMinimum),
     barcode: product.barcode ?? "",
   };
 }
@@ -69,8 +79,8 @@ export function formatQuantity(value: string | number | null | undefined, unit: 
   return `${formatted} ${unit === "kg" ? "kg" : "un"}`;
 }
 
-export function stockIsLow(product: Pick<ProductRecord, "stockCurrent" | "stockMinimum">) {
-  return toNumber(product.stockCurrent) <= toNumber(product.stockMinimum);
+export function stockIsLow(product: Pick<ProductRecord, "stockCurrent" | "stockMinimum" | "effectiveStockMinimum">) {
+  return toNumber(product.stockCurrent) <= toNumber(product.effectiveStockMinimum ?? product.stockMinimum);
 }
 
 export function normalizeScannerValue(value: string) {

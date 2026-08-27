@@ -60,3 +60,8 @@
 - [x] Adicionar a opção de importar planilha dentro da ação de cadastrar produto.
 - [x] Preservar prévia, validação, mapeamento e importação para o Supabase no fluxo integrado.
 - [x] Validar a nova organização da tela de produtos em desktop e mobile.
+- [x] Modelar categorias de produtos e o estoque mínimo padrão de cada categoria no Supabase.
+- [x] Permitir criar, editar e selecionar categorias no cadastro de produtos.
+- [x] Aplicar o estoque mínimo da categoria automaticamente, preservando ajustes específicos do produto.
+- [x] Ampliar alertas visuais de estoque baixo nas telas de produtos, estoque e painel operacional.
+- [x] Testar o cálculo de reposição por categoria e validar os alertas em desktop e mobile.

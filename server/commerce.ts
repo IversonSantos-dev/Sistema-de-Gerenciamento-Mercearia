@@ -8,6 +8,8 @@ export type ProductPayload = {
   unit: "un" | "kg";
   stockCurrent: number;
   stockMinimum: number;
+  categoryId?: number | null;
+  useCategoryMinimum?: boolean;
   barcode?: string | null;
   active?: boolean;
 };
@@ -58,9 +60,19 @@ type SupabaseProduct = {
   unit: "un" | "kg";
   stock_current: string | number;
   stock_minimum: string | number;
+  category_id: number | null;
+  use_category_minimum: boolean;
   inventory_code: string | null;
   barcode: string | null;
   active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+type SupabaseCategory = {
+  id: number;
+  name: string;
+  stock_minimum: string | number;
   created_at: string;
   updated_at: string;
 };
@@ -92,7 +104,13 @@ const toNumber = (value: number | string | null | undefined) => Number(value ?? 
 const money = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 const quantity = (value: number) => Math.round((value + Number.EPSILON) * 1000) / 1000;
 
-function mapProduct(product: SupabaseProduct) {
+function mapCategory(category: SupabaseCategory) {
+  return { id: Number(category.id), name: category.name, stockMinimum: quantity(toNumber(category.stock_minimum)), createdAt: category.created_at, updatedAt: category.updated_at };
+}
+
+function mapProduct(product: SupabaseProduct, categories = new Map<number, SupabaseCategory>()) {
+  const category = product.category_id ? categories.get(product.category_id) : undefined;
+  const effectiveStockMinimum = product.use_category_minimum && category ? quantity(toNumber(category.stock_minimum)) : quantity(toNumber(product.stock_minimum));
   return {
     id: product.id,
     name: product.name,
@@ -102,6 +120,10 @@ function mapProduct(product: SupabaseProduct) {
     unit: product.unit,
     stockCurrent: product.stock_current,
     stockMinimum: product.stock_minimum,
+    effectiveStockMinimum,
+    categoryId: product.category_id,
+    usesCategoryMinimum: product.use_category_minimum,
+    category: category ? mapCategory(category) : null,
     inventoryCode: product.inventory_code,
     barcode: product.barcode,
     active: product.active,
@@ -132,6 +154,8 @@ function productValues(input: ProductPayload) {
     unit: input.unit,
     stock_current: quantity(input.stockCurrent),
     stock_minimum: quantity(input.stockMinimum),
+    ...(input.categoryId !== undefined ? { category_id: input.categoryId } : {}),
+    ...(input.useCategoryMinimum !== undefined ? { use_category_minimum: input.useCategoryMinimum } : {}),
     barcode: input.barcode?.trim() || null,
     active: input.active ?? true,
     updated_at: new Date().toISOString(),
@@ -173,15 +197,35 @@ export async function listProducts(search?: string) {
   const term = search ? safeSearchTerm(search) : "";
   let query = supabase.from("products").select("*").order("name", { ascending: true });
   if (term) query = query.or(`name.ilike.%${term}%,barcode.ilike.%${term}%,inventory_code.ilike.%${term}%`);
-  const { data, error } = await query;
+  const [{ data, error }, categories] = await Promise.all([query, listCategories()]);
   ensureSupabaseSuccess(error);
-  return ((data ?? []) as SupabaseProduct[]).map(mapProduct);
+  const categoryMap = new Map(categories.map(category => [category.id, { id: category.id, name: category.name, stock_minimum: category.stockMinimum, created_at: category.createdAt, updated_at: category.updatedAt }]));
+  return ((data ?? []) as SupabaseProduct[]).map(product => mapProduct(product, categoryMap));
 }
 
 export async function getProductByBarcode(barcode: string) {
-  const { data, error } = await getSupabase().from("products").select("*").eq("barcode", barcode.trim()).eq("active", true).maybeSingle();
+  const [{ data, error }, categories] = await Promise.all([getSupabase().from("products").select("*").eq("barcode", barcode.trim()).eq("active", true).maybeSingle(), listCategories()]);
   ensureSupabaseSuccess(error);
-  return data ? mapProduct(data as SupabaseProduct) : null;
+  const categoryMap = new Map(categories.map(category => [category.id, { id: category.id, name: category.name, stock_minimum: category.stockMinimum, created_at: category.createdAt, updated_at: category.updatedAt }]));
+  return data ? mapProduct(data as SupabaseProduct, categoryMap) : null;
+}
+
+export async function listCategories() {
+  const { data, error } = await getSupabase().from("categories").select("*").order("name", { ascending: true });
+  ensureSupabaseSuccess(error);
+  return ((data ?? []) as SupabaseCategory[]).map(mapCategory);
+}
+
+export async function createCategory(input: { name: string; stockMinimum: number }) {
+  const { data, error } = await getSupabase().from("categories").insert({ name: input.name.trim(), stock_minimum: quantity(input.stockMinimum) }).select("id").single();
+  ensureSupabaseSuccess(error);
+  return { id: Number(data?.id) };
+}
+
+export async function updateCategory(id: number, input: { name: string; stockMinimum: number }) {
+  const { error } = await getSupabase().from("categories").update({ name: input.name.trim(), stock_minimum: quantity(input.stockMinimum), updated_at: new Date().toISOString() }).eq("id", id);
+  ensureSupabaseSuccess(error);
+  return { id };
 }
 
 export async function createProduct(input: ProductPayload) {
@@ -242,9 +286,8 @@ export async function importInventory(items: InventoryImportRow[], stockMinimum:
 }
 
 export async function listLowStockProducts() {
-  const { data, error } = await getSupabase().from("products").select("*").eq("active", true).order("stock_current", { ascending: true }).order("name", { ascending: true });
-  ensureSupabaseSuccess(error);
-  return ((data ?? []) as SupabaseProduct[]).filter(product => toNumber(product.stock_current) <= toNumber(product.stock_minimum)).map(mapProduct);
+  const products = await listProducts();
+  return products.filter(product => product.active && toNumber(product.stockCurrent) <= product.effectiveStockMinimum).sort((left, right) => toNumber(left.stockCurrent) - toNumber(right.stockCurrent) || left.name.localeCompare(right.name));
 }
 
 export async function getDashboardSummary() {

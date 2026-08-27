@@ -15,3 +15,7 @@ A tela de fechamento de caixa foi revisada em desktop e mobile. Os quatro meios 
 Os comprovantes foram configurados como prévia de 80 mm com folha de impressão isolada, usando apenas os dados persistidos de venda ou fechamento. A visualização é aberta após a confirmação da venda ou do fechamento, e o comando de impressão do último fechamento fica disponível no cabeçalho financeiro.
 
 A tela de produtos foi revisada em desktop e mobile depois da centralização da importação. A guia independente foi removida da navegação; o botão **Cadastrar produto** e o estado vazio passam a oferecer, em um único ponto, cadastro manual ou importação de planilha com as validações existentes.
+
+As telas de Produtos, Estoque baixo e Visão geral foram revisadas após a inclusão de categorias. A configuração de categorias está acessível no catálogo, e os alertas passam a distinguir produtos em reposição e produtos esgotados, mostrando o mínimo efetivo individual ou por categoria.
+
+Em largura móvel, a ação **Categorias**, o cadastro de produto e os cartões de alerta permanecem acessíveis. O painel operacional reorganiza os indicadores em uma única coluna e preserva a leitura dos alertas de estoque sem truncamento de conteúdo essencial.

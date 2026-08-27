@@ -18,6 +18,8 @@ const productInput = z.object({
   unit: z.enum(["un", "kg"]),
   stockCurrent: z.number().min(0),
   stockMinimum: z.number().min(0),
+  categoryId: z.number().int().positive().nullable().optional(),
+  useCategoryMinimum: z.boolean().optional(),
   barcode: barcodeSchema,
   active: z.boolean().optional(),
 });
@@ -30,6 +32,11 @@ const inventoryImportItem = z.object({
   unit: z.enum(["un", "kg"]),
   stockCurrent: z.number().min(0).max(999999999),
   unitPrice: z.number().positive().max(999999999),
+});
+
+const categoryInput = z.object({
+  name: z.string().trim().min(2, "Informe o nome da categoria.").max(120),
+  stockMinimum: z.number().min(0).max(999999999),
 });
 
 const closureDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data válida no formato AAAA-MM-DD.");
@@ -54,6 +61,17 @@ export const commerceRouter = router({
     } catch (error) {
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: errorMessage(error) });
     }
+  }),
+  categories: router({
+    list: protectedProcedure.query(() => commerce.listCategories()),
+    create: protectedProcedure.input(categoryInput).mutation(async ({ input }) => {
+      try { return await commerce.createCategory(input); }
+      catch (error) { throw new TRPCError({ code: "CONFLICT", message: errorMessage(error) }); }
+    }),
+    update: protectedProcedure.input(z.object({ id: z.number().int().positive(), data: categoryInput })).mutation(async ({ input }) => {
+      try { return await commerce.updateCategory(input.id, input.data); }
+      catch (error) { throw new TRPCError({ code: "CONFLICT", message: errorMessage(error) }); }
+    }),
   }),
   products: router({
     list: protectedProcedure
