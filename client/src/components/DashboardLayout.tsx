@@ -13,6 +13,7 @@ import {
   Printer,
   ReceiptText,
   RefreshCw,
+  Scale,
   Store,
 } from "lucide-react";
 import { useState } from "react";
@@ -24,6 +25,7 @@ const navigation = [
   { label: "Visão geral", path: "/", icon: LayoutDashboard },
   { label: "Ponto de venda", path: "/pdv", icon: ReceiptText },
   { label: "Produtos", path: "/produtos", icon: PackageSearch },
+  { label: "PLUs", path: "/plus", icon: Scale },
   { label: "Estoque baixo", path: "/estoque", icon: AlertTriangle },
   { label: "Fechamento", path: "/fechamento", icon: CalendarCheck2 },
 ];

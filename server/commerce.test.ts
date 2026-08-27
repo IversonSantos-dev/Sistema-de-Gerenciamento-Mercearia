@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateCartTotals, calculateCashDifferences, calculateStockAdjustment } from "./commerce";
+import { calculateCartTotals, calculateCashDifferences, calculateStockAdjustment, validateScalePlu } from "./commerce";
 import { buildCatalogQueryInput, stepStockQuantity } from "../client/src/lib/catalogControls";
 
 describe("calculateCartTotals", () => {
@@ -74,5 +74,19 @@ describe("catalog controls", () => {
     expect(stepStockQuantity("8", 5, 1)).toBe(9);
     expect(stepStockQuantity("0", 5, -1)).toBe(0);
     expect(stepStockQuantity("", 2.125, -0.001)).toBe(2.124);
+  });
+});
+
+describe("validateScalePlu", () => {
+  it("aceita um PLU de um a seis dígitos ou permite removê-lo", () => {
+    expect(validateScalePlu(1)).toBe(1);
+    expect(validateScalePlu(999999)).toBe(999999);
+    expect(validateScalePlu(null)).toBeNull();
+  });
+
+  it("rejeita PLUs fora dos limites aceitos pela balança", () => {
+    expect(() => validateScalePlu(0)).toThrow("PLU deve ter entre 1 e 6 dígitos");
+    expect(() => validateScalePlu(1_000_000)).toThrow("PLU deve ter entre 1 e 6 dígitos");
+    expect(() => validateScalePlu(12.5)).toThrow("PLU deve ter entre 1 e 6 dígitos");
   });
 });

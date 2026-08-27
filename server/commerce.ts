@@ -23,6 +23,11 @@ export type StockAdjustmentPayload = {
   adjustedBy: number;
 };
 
+export type ScalePluPayload = {
+  productId: number;
+  scalePlu: number | null;
+};
+
 export type SalePayload = {
   items: Array<{ productId: number; quantity: number }>;
   paymentMethod: "dinheiro" | "debito" | "credito" | "pix";
@@ -198,6 +203,12 @@ export function calculateStockAdjustment(previousQuantity: number, resultingQuan
   return { previousQuantity: previous, resultingQuantity: resulting, adjustmentQuantity: quantity(resulting - previous) };
 }
 
+export function validateScalePlu(scalePlu: number | null) {
+  if (scalePlu === null) return null;
+  if (!Number.isInteger(scalePlu) || scalePlu < 1 || scalePlu > 999999) throw new Error("O PLU deve ter entre 1 e 6 dígitos.");
+  return scalePlu;
+}
+
 function mapCashSummary(value: Record<string, unknown>, closureDate: string): CashSummary {
   return {
     closureDate: String(value.closureDate ?? closureDate),
@@ -234,6 +245,37 @@ export async function getProductByScalePlu(scalePlu: number) {
   ensureSupabaseSuccess(error);
   const categoryMap = new Map(categories.map(category => [category.id, { id: category.id, name: category.name, stock_minimum: category.stockMinimum, created_at: category.createdAt, updated_at: category.updatedAt }]));
   return data ? mapProduct(data as SupabaseProduct, categoryMap) : null;
+}
+
+export async function listWeightProductsForScalePlu(search?: string) {
+  const supabase = getSupabase();
+  const term = search ? safeSearchTerm(search) : "";
+  let query = supabase.from("products").select("*").eq("unit", "kg").eq("active", true).order("name", { ascending: true });
+  if (term) {
+    const filters = [`name.ilike.%${term}%`, `inventory_code.ilike.%${term}%`];
+    if (/^\d+$/.test(term)) filters.push(`scale_plu.eq.${term}`);
+    query = query.or(filters.join(","));
+  }
+  const [{ data, error }, categories] = await Promise.all([query, listCategories()]);
+  ensureSupabaseSuccess(error);
+  const categoryMap = new Map(categories.map(category => [category.id, { id: category.id, name: category.name, stock_minimum: category.stockMinimum, created_at: category.createdAt, updated_at: category.updatedAt }]));
+  return ((data ?? []) as SupabaseProduct[]).map(product => mapProduct(product, categoryMap));
+}
+
+export async function updateProductScalePlu(input: ScalePluPayload) {
+  const scalePlu = validateScalePlu(input.scalePlu);
+  const { data: product, error: productError } = await getSupabase().from("products").select("id, unit").eq("id", input.productId).single();
+  ensureSupabaseSuccess(productError);
+  if (!product) throw new Error("Produto não encontrado.");
+  if (product.unit !== "kg") throw new Error("Somente produtos vendidos por peso podem receber PLU de balança.");
+  if (scalePlu !== null) {
+    const { data: existing, error: existingError } = await getSupabase().from("products").select("id").eq("scale_plu", scalePlu).neq("id", input.productId).maybeSingle();
+    ensureSupabaseSuccess(existingError);
+    if (existing) throw new Error("Este PLU já está em uso por outro produto.");
+  }
+  const { error } = await getSupabase().from("products").update({ scale_plu: scalePlu, updated_at: new Date().toISOString() }).eq("id", input.productId);
+  ensureSupabaseSuccess(error);
+  return { productId: input.productId, scalePlu };
 }
 
 export async function getScaleBarcodeSettings(): Promise<ScaleBarcodeConfig> {

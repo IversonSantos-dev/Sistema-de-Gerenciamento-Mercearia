@@ -85,6 +85,9 @@ export const commerceRouter = router({
     byScalePlu: protectedProcedure
       .input(z.object({ scalePlu: z.number().int().positive().max(999999) }))
       .query(({ input }) => commerce.getProductByScalePlu(input.scalePlu)),
+    weightProductsForScale: protectedProcedure
+      .input(z.object({ search: z.string().trim().max(120).optional() }).optional())
+      .query(({ input }) => commerce.listWeightProductsForScalePlu(input?.search)),
     create: protectedProcedure.input(productInput).mutation(async ({ input }) => {
       try {
         return await commerce.createProduct(input);
@@ -106,6 +109,15 @@ export const commerceRouter = router({
       .mutation(async ({ input, ctx }) => {
         try {
           return await commerce.adjustProductStock({ ...input, adjustedBy: ctx.user.id });
+        } catch (error) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: errorMessage(error) });
+        }
+      }),
+    updateScalePlu: protectedProcedure
+      .input(z.object({ productId: z.number().int().positive(), scalePlu: z.number().int().positive().max(999999).nullable() }))
+      .mutation(async ({ input }) => {
+        try {
+          return await commerce.updateProductScalePlu(input);
         } catch (error) {
           throw new TRPCError({ code: "BAD_REQUEST", message: errorMessage(error) });
         }

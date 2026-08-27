@@ -84,3 +84,10 @@
 - [x] Testar a decodificação de etiquetas e documentar os dados necessários para a ativação futura.
 - [x] Integrar a detecção de etiquetas configuradas ao leitor do PDV com fallback para EAN/UPC convencional.
 - [x] Validar o produto por PLU e a compatibilidade entre total impresso, preço e peso antes de incluir a etiqueta no carrinho.
+- [x] Criar consulta exclusiva de produtos vendidos por peso para a gestão de PLUs.
+- [x] Permitir atribuir, alterar e remover PLUs diretamente pela interface de gestão.
+- [x] Adicionar acesso à gestão de PLUs no catálogo e orientar seu uso antes da balança ser ativada.
+- [x] Testar validação de PLU único, atualização da listagem e responsividade da gestão.
+- [x] Cobrir o conflito de PLU duplicado na atualização de produtos por peso.
+- [x] Validar a atualização do estado da listagem após salvar ou remover um PLU.
+- [x] Revisar a interface aberta de gestão de PLUs em desktop e celular.

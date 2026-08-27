@@ -29,7 +29,7 @@ vi.mock("./supabase", () => {
   };
 });
 
-import { adjustProductStock, listProducts } from "./commerce";
+import { adjustProductStock, listProducts, listWeightProductsForScalePlu } from "./commerce";
 
 describe("contratos de catálogo e ajuste", () => {
   beforeEach(() => {
@@ -44,6 +44,13 @@ describe("contratos de catálogo e ajuste", () => {
 
     expect(mocked.productEq).toHaveBeenCalledWith("category_id", 3);
     expect(products).toHaveLength(1);
+  });
+
+  it("consulta apenas produtos ativos vendidos por peso para a gestão de PLUs", async () => {
+    await listWeightProductsForScalePlu();
+
+    expect(mocked.productEq).toHaveBeenCalledWith("unit", "kg");
+    expect(mocked.productEq).toHaveBeenCalledWith("active", true);
   });
 
   it("envia o ajuste completo ao procedimento transacional e retorna a movimentação", async () => {
