@@ -1,20 +1,4 @@
-import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  gte,
-  inArray,
-  like,
-  lte,
-  or,
-  sql,
-  sum,
-} from "drizzle-orm";
-import type { MySqlTransaction } from "drizzle-orm/mysql-core";
-import { getDb } from "./db";
-import { products, saleItems, sales } from "../drizzle/schema";
+import { ensureSupabaseSuccess, getSupabase } from "./supabase";
 
 export type ProductPayload = {
   name: string;
@@ -32,6 +16,7 @@ export type SalePayload = {
   items: Array<{ productId: number; quantity: number }>;
   paymentMethod: "dinheiro" | "debito" | "credito" | "pix";
   amountPaid?: number;
+  clientSaleId?: string;
 };
 
 export type InventoryImportRow = {
@@ -44,285 +29,198 @@ export type InventoryImportRow = {
   unitPrice: number;
 };
 
+type SupabaseProduct = {
+  id: number;
+  name: string;
+  description: string | null;
+  cost_price: string | number;
+  sale_price: string | number;
+  unit: "un" | "kg";
+  stock_current: string | number;
+  stock_minimum: string | number;
+  inventory_code: string | null;
+  barcode: string | null;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+type SupabaseSale = {
+  id: number;
+  client_sale_id: string;
+  payment_method: "dinheiro" | "debito" | "credito" | "pix";
+  total_amount: string | number;
+  amount_paid: string | number;
+  change_amount: string | number;
+  item_count: number;
+  completed_at: string;
+};
+
 const toNumber = (value: number | string | null | undefined) => Number(value ?? 0);
 const money = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 const quantity = (value: number) => Math.round((value + Number.EPSILON) * 1000) / 1000;
+
+function mapProduct(product: SupabaseProduct) {
+  return {
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    costPrice: product.cost_price,
+    salePrice: product.sale_price,
+    unit: product.unit,
+    stockCurrent: product.stock_current,
+    stockMinimum: product.stock_minimum,
+    inventoryCode: product.inventory_code,
+    barcode: product.barcode,
+    active: product.active,
+    createdAt: product.created_at,
+    updatedAt: product.updated_at,
+  };
+}
+
+function mapSale(sale: SupabaseSale) {
+  return {
+    id: sale.id,
+    clientSaleId: sale.client_sale_id,
+    paymentMethod: sale.payment_method,
+    totalAmount: sale.total_amount,
+    amountPaid: sale.amount_paid,
+    changeAmount: sale.change_amount,
+    itemCount: sale.item_count,
+    completedAt: new Date(sale.completed_at),
+  };
+}
 
 function productValues(input: ProductPayload) {
   return {
     name: input.name.trim(),
     description: input.description?.trim() || null,
-    costPrice: money(input.costPrice).toFixed(2),
-    salePrice: money(input.salePrice).toFixed(2),
+    cost_price: money(input.costPrice),
+    sale_price: money(input.salePrice),
     unit: input.unit,
-    stockCurrent: quantity(input.stockCurrent).toFixed(3),
-    stockMinimum: quantity(input.stockMinimum).toFixed(3),
+    stock_current: quantity(input.stockCurrent),
+    stock_minimum: quantity(input.stockMinimum),
     barcode: input.barcode?.trim() || null,
     active: input.active ?? true,
+    updated_at: new Date().toISOString(),
   };
 }
 
-export function calculateCartTotals(
-  items: Array<{ unitPrice: number; quantity: number }>,
-  amountPaid = 0,
-) {
-  const total = money(
-    items.reduce((acc, item) => acc + money(item.unitPrice * item.quantity), 0),
-  );
+function safeSearchTerm(value: string) {
+  return value.replace(/[,%()]/g, "").trim();
+}
+
+export function calculateCartTotals(items: Array<{ unitPrice: number; quantity: number }>, amountPaid = 0) {
+  const total = money(items.reduce((acc, item) => acc + money(item.unitPrice * item.quantity), 0));
   const paid = money(amountPaid);
-  return {
-    total,
-    amountPaid: paid,
-    change: Math.max(0, money(paid - total)),
-    amountDue: Math.max(0, money(total - paid)),
-  };
+  return { total, amountPaid: paid, change: Math.max(0, money(paid - total)), amountDue: Math.max(0, money(total - paid)) };
 }
 
 export async function listProducts(search?: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Banco de dados indisponível.");
-
-  const term = search?.trim();
-  const where = term
-    ? or(like(products.name, `%${term}%`), like(products.barcode, `%${term}%`))
-    : undefined;
-
-  return db.select().from(products).where(where).orderBy(asc(products.name));
+  const supabase = getSupabase();
+  const term = search ? safeSearchTerm(search) : "";
+  let query = supabase.from("products").select("*").order("name", { ascending: true });
+  if (term) query = query.or(`name.ilike.%${term}%,barcode.ilike.%${term}%,inventory_code.ilike.%${term}%`);
+  const { data, error } = await query;
+  ensureSupabaseSuccess(error);
+  return ((data ?? []) as SupabaseProduct[]).map(mapProduct);
 }
 
 export async function getProductByBarcode(barcode: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Banco de dados indisponível.");
-
-  const result = await db
-    .select()
-    .from(products)
-    .where(and(eq(products.barcode, barcode.trim()), eq(products.active, true)))
-    .limit(1);
-
-  return result[0] ?? null;
+  const { data, error } = await getSupabase().from("products").select("*").eq("barcode", barcode.trim()).eq("active", true).maybeSingle();
+  ensureSupabaseSuccess(error);
+  return data ? mapProduct(data as SupabaseProduct) : null;
 }
 
 export async function createProduct(input: ProductPayload) {
-  const db = await getDb();
-  if (!db) throw new Error("Banco de dados indisponível.");
-
-  const result = await db.insert(products).values(productValues(input));
-  return { id: Number(result[0].insertId) };
+  const { data, error } = await getSupabase().from("products").insert(productValues(input)).select("id").single();
+  ensureSupabaseSuccess(error);
+  if (!data) throw new Error("O banco principal não retornou o produto criado.");
+  return { id: Number(data.id) };
 }
 
 export async function updateProduct(id: number, input: ProductPayload) {
-  const db = await getDb();
-  if (!db) throw new Error("Banco de dados indisponível.");
-
-  await db.update(products).set(productValues(input)).where(eq(products.id, id));
+  const { error } = await getSupabase().from("products").update(productValues(input)).eq("id", id);
+  ensureSupabaseSuccess(error);
   return { id };
 }
 
 export async function importInventory(items: InventoryImportRow[], stockMinimum: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Banco de dados indisponível.");
-
+  const supabase = getSupabase();
   const codes = Array.from(new Set(items.map(item => item.inventoryCode).filter(Boolean)));
   const barcodes = Array.from(new Set(items.map(item => item.barcode).filter((barcode): barcode is string => Boolean(barcode))));
   if (codes.length !== items.length) throw new Error("A importação contém códigos internos duplicados.");
   if (barcodes.length !== items.filter(item => item.barcode).length) throw new Error("A importação contém códigos de barras duplicados.");
-  const existing = await db
-    .select()
-    .from(products)
-    .where(or(inArray(products.inventoryCode, codes), ...(barcodes.length ? [inArray(products.barcode, barcodes)] : [])));
 
-  const existingByCode = new Map(existing.filter(product => product.inventoryCode).map(product => [product.inventoryCode!, product]));
+  const [{ data: byCode, error: codeError }, { data: byBarcode, error: barcodeError }] = await Promise.all([
+    supabase.from("products").select("*").in("inventory_code", codes),
+    barcodes.length ? supabase.from("products").select("*").in("barcode", barcodes) : Promise.resolve({ data: [], error: null }),
+  ]);
+  ensureSupabaseSuccess(codeError);
+  ensureSupabaseSuccess(barcodeError);
+  const existing = [...((byCode ?? []) as SupabaseProduct[]), ...((byBarcode ?? []) as SupabaseProduct[])];
+  const existingByCode = new Map(existing.filter(product => product.inventory_code).map(product => [product.inventory_code!, product]));
   const existingByBarcode = new Map(existing.filter(product => product.barcode).map(product => [product.barcode!, product]));
   const errors: Array<{ rowNumber: number; message: string }> = [];
-  let created = 0;
-  let updated = 0;
+  const createRows: Array<Record<string, unknown>> = [];
+  const updateRows: Array<{ id: number; values: Record<string, unknown> }> = [];
 
-  await db.transaction(async tx => {
-    for (const item of items) {
-      const byCode = existingByCode.get(item.inventoryCode);
-      const byBarcode = item.barcode ? existingByBarcode.get(item.barcode) : undefined;
-      if (byCode && byBarcode && byCode.id !== byBarcode.id) {
-        errors.push({ rowNumber: item.rowNumber, message: "O código interno e o código de barras correspondem a produtos diferentes." });
-        continue;
-      }
-      const existingProduct = byCode ?? byBarcode;
-      const commonValues = {
-        name: item.name.trim(),
-        unit: item.unit,
-        stockCurrent: quantity(item.stockCurrent).toFixed(3),
-        inventoryCode: item.inventoryCode,
-        barcode: item.barcode?.trim() || null,
-        active: true,
-      };
-
-      if (existingProduct) {
-        await tx.update(products).set({ ...commonValues, salePrice: money(item.unitPrice).toFixed(2) }).where(eq(products.id, existingProduct.id));
-        updated += 1;
-      } else {
-        await tx.insert(products).values({
-          ...commonValues,
-          description: null,
-          costPrice: money(item.unitPrice).toFixed(2),
-          salePrice: money(item.unitPrice).toFixed(2),
-          stockMinimum: quantity(stockMinimum).toFixed(3),
-        });
-        created += 1;
-      }
+  for (const item of items) {
+    const byInternalCode = existingByCode.get(item.inventoryCode);
+    const byScannedCode = item.barcode ? existingByBarcode.get(item.barcode) : undefined;
+    if (byInternalCode && byScannedCode && byInternalCode.id !== byScannedCode.id) {
+      errors.push({ rowNumber: item.rowNumber, message: "O código interno e o código de barras correspondem a produtos diferentes." });
+      continue;
     }
-  });
+    const matched = byInternalCode ?? byScannedCode;
+    const values = { name: item.name.trim(), unit: item.unit, stock_current: quantity(item.stockCurrent), inventory_code: item.inventoryCode, barcode: item.barcode?.trim() || null, active: true, updated_at: new Date().toISOString() };
+    if (matched) updateRows.push({ id: matched.id, values: { ...values, sale_price: money(item.unitPrice) } });
+    else createRows.push({ ...values, description: null, cost_price: money(item.unitPrice), sale_price: money(item.unitPrice), stock_minimum: quantity(stockMinimum) });
+  }
 
-  return { created, updated, rejected: errors.length, errors: errors.slice(0, 30) };
+  if (createRows.length) {
+    const { error } = await supabase.from("products").insert(createRows);
+    ensureSupabaseSuccess(error);
+  }
+  for (const update of updateRows) {
+    const { error } = await supabase.from("products").update(update.values).eq("id", update.id);
+    ensureSupabaseSuccess(error);
+  }
+  return { created: createRows.length, updated: updateRows.length, rejected: errors.length, errors: errors.slice(0, 30) };
 }
 
 export async function listLowStockProducts() {
-  const db = await getDb();
-  if (!db) throw new Error("Banco de dados indisponível.");
-
-  return db
-    .select()
-    .from(products)
-    .where(and(eq(products.active, true), lte(products.stockCurrent, products.stockMinimum)))
-    .orderBy(asc(products.stockCurrent), asc(products.name));
+  const { data, error } = await getSupabase().from("products").select("*").eq("active", true).order("stock_current", { ascending: true }).order("name", { ascending: true });
+  ensureSupabaseSuccess(error);
+  return ((data ?? []) as SupabaseProduct[]).filter(product => toNumber(product.stock_current) <= toNumber(product.stock_minimum)).map(mapProduct);
 }
 
 export async function getDashboardSummary() {
-  const db = await getDb();
-  if (!db) throw new Error("Banco de dados indisponível.");
-
-  const [productCount] = await db
-    .select({ total: count() })
-    .from(products)
-    .where(eq(products.active, true));
-  const lowStock = await listLowStockProducts();
-  const [salesSummary] = await db
-    .select({ total: sum(sales.totalAmount), count: count() })
-    .from(sales)
-    .where(gte(sales.completedAt, new Date(new Date().setHours(0, 0, 0, 0))));
-
-  return {
-    activeProducts: productCount?.total ?? 0,
-    lowStockCount: lowStock.length,
-    lowStock,
-    todaySalesCount: salesSummary?.count ?? 0,
-    todaySalesTotal: toNumber(salesSummary?.total),
-  };
+  const [products, lowStock, sales] = await Promise.all([
+    listProducts(),
+    listLowStockProducts(),
+    getSupabase().from("sales").select("total_amount").gte("completed_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString()),
+  ]);
+  ensureSupabaseSuccess(sales.error);
+  return { activeProducts: products.filter(product => product.active).length, lowStockCount: lowStock.length, lowStock, todaySalesCount: sales.data?.length ?? 0, todaySalesTotal: (sales.data ?? []).reduce((sum, sale) => sum + toNumber(sale.total_amount), 0) };
 }
 
 export async function listRecentSales() {
-  const db = await getDb();
-  if (!db) throw new Error("Banco de dados indisponível.");
-
-  return db.select().from(sales).orderBy(desc(sales.completedAt)).limit(10);
-}
-
-type Transaction = MySqlTransaction<any, any, any, any>;
-
-async function decrementProductStock(
-  tx: Transaction,
-  productId: number,
-  requestedQuantity: number,
-) {
-  const result = await tx
-    .update(products)
-    .set({
-      stockCurrent: sql`${products.stockCurrent} - ${requestedQuantity.toFixed(3)}`,
-    })
-    .where(
-      and(
-        eq(products.id, productId),
-        eq(products.active, true),
-        gte(products.stockCurrent, requestedQuantity.toFixed(3)),
-      ),
-    );
-
-  return Number(result[0].affectedRows) > 0;
+  const { data, error } = await getSupabase().from("sales").select("*").order("completed_at", { ascending: false }).limit(10);
+  ensureSupabaseSuccess(error);
+  return ((data ?? []) as SupabaseSale[]).map(mapSale);
 }
 
 export async function finalizeSale(input: SalePayload) {
-  const db = await getDb();
-  if (!db) throw new Error("Banco de dados indisponível.");
-
-  const mergedItems = Array.from(
-    input.items.reduce((map, item) => {
-      const current = map.get(item.productId) ?? 0;
-      map.set(item.productId, quantity(current + item.quantity));
-      return map;
-    }, new Map<number, number>()),
-  ).map(([productId, itemQuantity]) => ({ productId, quantity: itemQuantity }));
-
-  if (!mergedItems.length) throw new Error("Inclua ao menos um item na venda.");
-
-  return db.transaction(async tx => {
-    const ids = mergedItems.map(item => item.productId);
-    const selectedProducts = await tx
-      .select()
-      .from(products)
-      .where(and(inArray(products.id, ids), eq(products.active, true)));
-
-    if (selectedProducts.length !== ids.length) {
-      throw new Error("Um ou mais produtos não estão disponíveis para venda.");
-    }
-
-    const productById = new Map(selectedProducts.map(product => [product.id, product]));
-    const computedItems = mergedItems.map(item => {
-      const product = productById.get(item.productId);
-      if (!product) throw new Error("Produto não encontrado.");
-      return {
-        product,
-        quantity: item.quantity,
-        unitPrice: toNumber(product.salePrice),
-        subtotal: money(toNumber(product.salePrice) * item.quantity),
-      };
-    });
-
-    const totals = calculateCartTotals(
-      computedItems.map(item => ({ unitPrice: item.unitPrice, quantity: item.quantity })),
-      input.amountPaid ?? 0,
-    );
-
-    if (input.paymentMethod === "dinheiro" && totals.amountDue > 0) {
-      throw new Error("O valor recebido é menor que o total da compra.");
-    }
-
-    const paidAmount =
-      input.paymentMethod === "dinheiro" ? totals.amountPaid : totals.total;
-    const changeAmount = input.paymentMethod === "dinheiro" ? totals.change : 0;
-
-    for (const item of computedItems) {
-      const decremented = await decrementProductStock(tx, item.product.id, item.quantity);
-      if (!decremented) {
-        throw new Error(`Estoque insuficiente para ${item.product.name}.`);
-      }
-    }
-
-    const saleResult = await tx.insert(sales).values({
-      paymentMethod: input.paymentMethod,
-      totalAmount: totals.total.toFixed(2),
-      amountPaid: paidAmount.toFixed(2),
-      changeAmount: changeAmount.toFixed(2),
-      itemCount: computedItems.length,
-    });
-    const saleId = Number(saleResult[0].insertId);
-
-    await tx.insert(saleItems).values(
-      computedItems.map(item => ({
-        saleId,
-        productId: item.product.id,
-        productName: item.product.name,
-        barcode: item.product.barcode,
-        unit: item.product.unit,
-        unitPrice: item.unitPrice.toFixed(2),
-        quantity: item.quantity.toFixed(3),
-        subtotal: item.subtotal.toFixed(2),
-      })),
-    );
-
-    return {
-      saleId,
-      total: totals.total,
-      amountPaid: paidAmount,
-      change: changeAmount,
-    };
+  if (!input.items.length) throw new Error("Inclua ao menos um item na venda.");
+  const operationId = input.clientSaleId ?? crypto.randomUUID();
+  const { data, error } = await getSupabase().rpc("finalize_sale", {
+    p_operation_id: operationId,
+    p_payment_method: input.paymentMethod,
+    p_amount_paid: input.amountPaid ?? 0,
+    p_items: input.items,
   });
+  ensureSupabaseSuccess(error);
+  const result = typeof data === "string" ? JSON.parse(data) : data;
+  return { saleId: Number(result.saleId), total: toNumber(result.total), amountPaid: toNumber(result.amountPaid), change: toNumber(result.change), clientSaleId: operationId };
 }

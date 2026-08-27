@@ -1,0 +1,5 @@
+{
+  "project_id": "fmatopzoavmgazrbruua",
+  "name": "restrict_public_database_access",
+  "query": "ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.sales ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.sale_items ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.sync_operations ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.users ENABLE ROW LEVEL SECURITY;\nREVOKE ALL ON TABLE public.products, public.sales, public.sale_items, public.sync_operations, public.users FROM anon, authenticated;\nREVOKE EXECUTE ON FUNCTION public.finalize_sale(uuid, text, numeric, jsonb) FROM anon, authenticated;"
+}

@@ -94,6 +94,7 @@ export const commerceRouter = router({
             .min(1),
           paymentMethod: z.enum(["dinheiro", "debito", "credito", "pix"]),
           amountPaid: z.number().min(0).optional(),
+          clientSaleId: z.string().uuid().optional(),
         }),
       )
       .mutation(async ({ input }) => {

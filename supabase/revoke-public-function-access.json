@@ -1,0 +1,5 @@
+{
+  "project_id": "fmatopzoavmgazrbruua",
+  "name": "revoke_public_finalize_sale_access",
+  "query": "REVOKE EXECUTE ON FUNCTION public.finalize_sale(uuid, text, numeric, jsonb) FROM PUBLIC;"
+}

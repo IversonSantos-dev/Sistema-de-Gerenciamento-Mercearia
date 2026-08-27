@@ -20,3 +20,16 @@
 - [x] Mapear e validar campos de produto, preços, unidade, estoque e código de barras antes da importação.
 - [x] Criar interface de importação com resumo de registros criados, atualizados e rejeitados.
 - [x] Testar a importação com a planilha fornecida e registrar os resultados.
+- [x] Definir a arquitetura de operação offline e sincronização com o banco principal online.
+- [x] Adicionar persistência local no navegador para catálogo, estoque e vendas pendentes quando não houver internet.
+- [x] Implementar uma fila de operações offline com sincronização automática e idempotente ao restabelecer a conexão.
+- [x] Exibir estado de conexão e pendências de sincronização no PDV.
+- [x] Testar venda offline, recuperação de conexão e prevenção de duplicidade no banco principal.
+- [x] Documentar uma plataforma gratuita de banco online e o procedimento de administração e manutenção.
+- [x] Configurar com segurança as credenciais do projeto Supabase como banco principal.
+- [x] Migrar as tabelas de usuários, produtos, vendas e itens de venda do banco atual para o Supabase PostgreSQL.
+- [x] Implementar uma cópia operacional local no navegador para um único caixa e fila idempotente de sincronização.
+- [x] Sincronizar automaticamente produtos e vendas pendentes ao restabelecer a conexão.
+- [x] Exibir na frente de caixa o estado online/offline e a quantidade de operações aguardando envio.
+- [x] Testar a recuperação de conexão e documentar o painel de manutenção do Supabase.
+- [x] Validar visualmente os indicadores de conexão e sincronização da frente de caixa em desktop e mobile.

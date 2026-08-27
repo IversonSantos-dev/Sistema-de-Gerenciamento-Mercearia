@@ -9,6 +9,7 @@ export type ProductRecord = {
   unit: Unit;
   stockCurrent: string | number;
   stockMinimum: string | number;
+  inventoryCode?: string | null;
   barcode: string | null;
   active: boolean;
 };
