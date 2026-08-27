@@ -1,0 +1,32 @@
+import { formatCurrency, formatQuantity, ProductRecord } from "@/lib/commerce";
+import { trpc } from "@/lib/trpc";
+import { AlertTriangle, ArrowUpRight, Boxes, CircleDollarSign, Package, ReceiptText } from "lucide-react";
+import { useLocation } from "wouter";
+
+function StatCard({ label, value, description, icon: Icon, tone = "green" }: { label: string; value: string | number; description: string; icon: React.ComponentType<{ className?: string }>; tone?: "green" | "yellow" | "neutral" }) {
+  const colors = { green: "bg-[#e5f2d6] text-[#2d6046]", yellow: "bg-[#fff0c9] text-[#9a5d08]", neutral: "bg-[#e9efec] text-[#365143]" };
+  return <article className="rounded-2xl border border-[#e0e6dd] bg-white p-5 shadow-[0_4px_18px_rgba(31,55,41,0.035)]"><div className="flex items-start justify-between"><div><p className="text-sm font-medium text-[#728078]">{label}</p><p className="mt-2 text-2xl font-semibold tracking-tight text-[#1b3026]">{value}</p></div><div className={`grid size-10 place-items-center rounded-xl ${colors[tone]}`}><Icon className="size-5" /></div></div><p className="mt-3 text-xs text-[#77867e]">{description}</p></article>;
+}
+
+export default function Dashboard() {
+  const [_, setLocation] = useLocation();
+  const { data, isLoading } = trpc.commerce.dashboard.useQuery();
+  const { data: recentSales = [] } = trpc.commerce.sales.recent.useQuery();
+  const lowStock = (data?.lowStock ?? []) as ProductRecord[];
+
+  return (
+    <div className="space-y-7">
+      <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#62786a]">Visão geral</p><h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#193c32]">Sua operação, em ordem.</h1><p className="mt-2 text-sm text-[#6b786f]">Acompanhe vendas do dia, estoque e o que precisa de atenção.</p></div><button onClick={() => setLocation("/pdv")} className="inline-flex h-11 items-center justify-center rounded-xl bg-[#193c32] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#245542]">Nova venda <ArrowUpRight className="ml-2 size-4" /></button></section>
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Vendas hoje" value={isLoading ? "—" : formatCurrency(data?.todaySalesTotal)} description={`${data?.todaySalesCount ?? 0} venda(s) confirmada(s) hoje`} icon={CircleDollarSign} />
+        <StatCard label="Produtos ativos" value={isLoading ? "—" : data?.activeProducts ?? 0} description="Itens disponíveis no catálogo" icon={Package} tone="neutral" />
+        <StatCard label="Atenção ao estoque" value={isLoading ? "—" : data?.lowStockCount ?? 0} description="Itens no mínimo ou abaixo dele" icon={AlertTriangle} tone="yellow" />
+        <StatCard label="Caixa" value="Aberto" description="Pronto para registrar vendas" icon={ReceiptText} tone="green" />
+      </section>
+      <section className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+        <article className="overflow-hidden rounded-2xl border border-[#e0e6dd] bg-white"><header className="flex items-center justify-between border-b border-[#edf0eb] px-5 py-4"><div><h2 className="font-semibold text-[#1d3529]">Estoque requer atenção</h2><p className="mt-1 text-xs text-[#718076]">Reposicione antes que falte no caixa.</p></div><button onClick={() => setLocation("/estoque")} className="text-sm font-semibold text-[#286144] hover:underline">Ver estoque</button></header>{lowStock.length ? <div className="divide-y divide-[#edf0eb]">{lowStock.slice(0, 5).map(product => <div key={product.id} className="flex items-center justify-between gap-3 px-5 py-3.5"><div className="min-w-0"><p className="truncate text-sm font-semibold text-[#243b30]">{product.name}</p><p className="mt-0.5 font-mono text-xs text-[#819087]">{product.barcode ?? "Sem código de barras"}</p></div><div className="text-right"><p className="text-sm font-bold text-[#a25e08]">{formatQuantity(product.stockCurrent, product.unit)}</p><p className="mt-0.5 text-xs text-[#7f8d85]">mín. {formatQuantity(product.stockMinimum, product.unit)}</p></div></div>)}</div> : <div className="grid min-h-56 place-items-center px-6 text-center"><div><div className="mx-auto grid size-11 place-items-center rounded-xl bg-[#e5f2d6] text-[#286144]"><Boxes className="size-5" /></div><p className="mt-3 text-sm font-semibold text-[#294536]">Estoque em níveis saudáveis</p><p className="mt-1 text-xs text-[#75827a]">Nenhum produto atingiu o nível mínimo.</p></div></div>}</article>
+        <article className="overflow-hidden rounded-2xl border border-[#e0e6dd] bg-white"><header className="border-b border-[#edf0eb] px-5 py-4"><h2 className="font-semibold text-[#1d3529]">Últimas vendas</h2><p className="mt-1 text-xs text-[#718076]">Movimentações confirmadas.</p></header>{recentSales.length ? <div className="divide-y divide-[#edf0eb]">{recentSales.slice(0, 5).map(sale => <div key={sale.id} className="flex items-center justify-between px-5 py-3.5"><div><p className="text-sm font-semibold capitalize text-[#293f33]">{sale.paymentMethod}</p><p className="mt-0.5 text-xs text-[#7e8b84]">{sale.itemCount} item(ns) · {new Date(sale.completedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p></div><p className="text-sm font-bold text-[#244b38]">{formatCurrency(sale.totalAmount)}</p></div>)}</div> : <div className="grid min-h-56 place-items-center px-6 text-center"><div><div className="mx-auto grid size-11 place-items-center rounded-xl bg-[#e9efec] text-[#365143]"><ReceiptText className="size-5" /></div><p className="mt-3 text-sm font-semibold text-[#294536]">Nenhuma venda registrada</p><p className="mt-1 text-xs text-[#75827a]">As vendas finalizadas aparecerão aqui.</p></div></div>}</article>
+      </section>
+    </div>
+  );
+}

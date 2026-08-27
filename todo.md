@@ -1,0 +1,17 @@
+# Project TODO
+
+- [x] Modelar e aplicar as tabelas de produtos, vendas e itens de venda no banco de dados.
+- [x] Criar procedimentos de backend para cadastrar, editar, consultar e localizar produtos por código de barras.
+- [x] Criar procedimentos transacionais para finalizar vendas, registrar pagamentos e baixar o estoque imediatamente.
+- [x] Implementar a estrutura de navegação administrativa com acesso ao PDV, produtos e estoque baixo.
+- [x] Implementar o dashboard operacional com indicadores de estoque e vendas.
+- [x] Implementar cadastro e gerenciamento de produtos com nome, descrição, custo, venda, unidade, estoque e EAN-13/UPC.
+- [x] Implementar alerta visual de produtos no estoque mínimo ou abaixo dele.
+- [x] Implementar leitura de código de barras compatível com leitores USB/Bluetooth Keyboard Wedge no cadastro e no PDV.
+- [x] Implementar tela de venda rápida com carrinho, agrupamento de itens repetidos, edição de quantidades e subtotais em tempo real.
+- [x] Implementar finalização por dinheiro, débito, crédito ou Pix, incluindo cálculo de troco quando aplicável.
+- [x] Implementar atalhos de teclado para busca, alteração ou remoção de itens, cancelamento e finalização de venda.
+- [x] Aplicar estilo elegante, enxuto e responsivo, priorizando desempenho em computadores de configurações básicas.
+- [x] Criar e executar testes unitários para operações críticas de estoque, vendas e cálculos do carrinho.
+- [x] Validar visualmente as telas em formatos de desktop e mobile, corrigindo problemas encontrados.
+- [x] Ajustar a listagem de produtos para apresentar cartões acessíveis e completos em telas móveis.
