@@ -42,3 +42,6 @@
 - [x] Persistir catálogo e vendas pendentes no arquivo pdv-local.json escolhido pelo operador.
 - [x] Substituir a fila baseada em IndexedDB pela leitura e escrita do arquivo local autorizado.
 - [x] Orientar o operador a autorizar a pasta do PDV antes da primeira operação offline.
+- [x] Adicionar botão de sincronização manual para enviar vendas pendentes do arquivo local ao Supabase.
+- [x] Exibir retorno claro de sincronização manual, indisponibilidade de internet e ausência de pendências.
+- [x] Testar o acionamento manual sem duplicar vendas ou alterar itens já sincronizados.

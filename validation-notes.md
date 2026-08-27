@@ -7,3 +7,5 @@ A página de importação de inventário foi revisada em desktop. O painel apres
 A frente de caixa foi revisada em desktop e mobile após a inclusão da redundância. Os indicadores de conexão aparecem junto ao título sem prejudicar o fluxo de leitura do produto, e o aviso de operação offline foi concebido para manter a confirmação de venda clara em telas estreitas.
 
 A substituição para arquivo local foi revisada em desktop e mobile. O alerta de proteção local explica que o operador deve escolher uma pasta e cria o arquivo `pdv-local.json` nessa pasta, sem esconder o fluxo de leitura de código, carrinho ou finalização de venda.
+
+O comando manual **Sincronizar vendas** foi revisado no cabeçalho da frente de caixa. Ele fica visível somente no PDV e aciona a mesma fila idempotente usada na sincronização automática, apresentando mensagens claras para internet indisponível, ausência de pendências, sincronização em andamento e envio concluído.
