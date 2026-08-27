@@ -91,6 +91,13 @@ export const commerceRouter = router({
   }),
   sales: router({
     recent: protectedProcedure.query(() => commerce.listRecentSales()),
+    receipt: protectedProcedure.input(z.object({ saleId: z.number().int().positive() })).query(async ({ input }) => {
+      try {
+        return await commerce.getSaleReceipt(input.saleId);
+      } catch (error) {
+        throw new TRPCError({ code: "NOT_FOUND", message: errorMessage(error) });
+      }
+    }),
     finalize: protectedProcedure
       .input(
         z.object({

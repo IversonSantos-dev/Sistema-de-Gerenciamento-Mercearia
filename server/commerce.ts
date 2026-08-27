@@ -76,6 +76,18 @@ type SupabaseSale = {
   completed_at: string;
 };
 
+type SupabaseSaleItem = {
+  id: number;
+  sale_id: number;
+  product_id: number;
+  product_name: string;
+  barcode: string | null;
+  unit: "un" | "kg";
+  unit_price: string | number;
+  quantity: string | number;
+  subtotal: string | number;
+};
+
 const toNumber = (value: number | string | null | undefined) => Number(value ?? 0);
 const money = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 const quantity = (value: number) => Math.round((value + Number.EPSILON) * 1000) / 1000;
@@ -251,6 +263,28 @@ export async function listRecentSales() {
   return ((data ?? []) as SupabaseSale[]).map(mapSale);
 }
 
+export async function getSaleReceipt(saleId: number) {
+  const supabase = getSupabase();
+  const [{ data: sale, error: saleError }, { data: items, error: itemsError }] = await Promise.all([
+    supabase.from("sales").select("*").eq("id", saleId).single(),
+    supabase.from("sale_items").select("*").eq("sale_id", saleId).order("id", { ascending: true }),
+  ]);
+  ensureSupabaseSuccess(saleError);
+  ensureSupabaseSuccess(itemsError);
+  return {
+    ...mapSale(sale as SupabaseSale),
+    items: ((items ?? []) as SupabaseSaleItem[]).map(item => ({
+      id: Number(item.id),
+      productName: item.product_name,
+      barcode: item.barcode,
+      unit: item.unit,
+      unitPrice: money(toNumber(item.unit_price)),
+      quantity: quantity(toNumber(item.quantity)),
+      subtotal: money(toNumber(item.subtotal)),
+    })),
+  };
+}
+
 export async function finalizeSale(input: SalePayload) {
   if (!input.items.length) throw new Error("Inclua ao menos um item na venda.");
   const operationId = input.clientSaleId ?? crypto.randomUUID();
@@ -294,6 +328,14 @@ export async function listCashClosings() {
   return (data ?? []).map((closing: Record<string, unknown>) => ({
     id: Number(closing.id),
     closureDate: String(closing.closure_date),
+    expectedCash: money(toNumber(closing.expected_cash as string | number)),
+    expectedDebit: money(toNumber(closing.expected_debit as string | number)),
+    expectedCredit: money(toNumber(closing.expected_credit as string | number)),
+    expectedPix: money(toNumber(closing.expected_pix as string | number)),
+    countedCash: money(toNumber(closing.counted_cash as string | number)),
+    countedDebit: money(toNumber(closing.counted_debit as string | number)),
+    countedCredit: money(toNumber(closing.counted_credit as string | number)),
+    countedPix: money(toNumber(closing.counted_pix as string | number)),
     expectedTotal: money(toNumber(closing.expected_cash as string | number) + toNumber(closing.expected_debit as string | number) + toNumber(closing.expected_credit as string | number) + toNumber(closing.expected_pix as string | number)),
     countedTotal: money(toNumber(closing.counted_cash as string | number) + toNumber(closing.counted_debit as string | number) + toNumber(closing.counted_credit as string | number) + toNumber(closing.counted_pix as string | number)),
     differenceTotal: money(toNumber(closing.difference_total as string | number)),

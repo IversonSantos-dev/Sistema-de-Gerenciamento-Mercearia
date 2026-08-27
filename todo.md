@@ -52,3 +52,7 @@
 - [x] Criar uma tela de fechamento com valores apurados, valores contados e diferenças.
 - [x] Registrar observações e o resultado do fechamento para consulta posterior.
 - [x] Testar os cálculos financeiros e a prevenção de fechamentos duplicados na mesma data.
+- [x] Preparar consulta detalhada de vendas para emissão de comprovante simplificado.
+- [x] Criar layout de comprovante térmico não fiscal para venda e fechamento de caixa.
+- [x] Adicionar comandos de prévia e impressão pelo navegador nas telas de venda e fechamento.
+- [x] Validar o conteúdo e o layout de impressão em formato térmico.

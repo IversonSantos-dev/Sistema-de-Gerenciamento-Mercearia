@@ -57,6 +57,7 @@ export default function CashClosing() {
     try {
       const result = await closeMutation.mutateAsync({ closureDate, countedCash: values.cash, countedDebit: values.debit, countedCredit: values.credit, countedPix: values.pix, notes });
       setCompleted({ id: result.id, difference: result.differences.total });
+      window.dispatchEvent(new CustomEvent("pdv:print-closing", { detail: { closingId: result.id } }));
       await Promise.all([utils.commerce.cash.summary.invalidate({ closureDate }), utils.commerce.cash.recentClosings.invalidate(), utils.commerce.dashboard.invalidate()]);
       toast.success("Caixa fechado e registrado.");
     } catch (error) { toast.error(error instanceof Error ? error.message : "Não foi possível fechar o caixa."); }
