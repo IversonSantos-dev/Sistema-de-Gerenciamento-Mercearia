@@ -32,6 +32,16 @@ const inventoryImportItem = z.object({
   unitPrice: z.number().positive().max(999999999),
 });
 
+const closureDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data válida no formato AAAA-MM-DD.");
+const cashClosingInput = z.object({
+  closureDate: closureDateSchema,
+  countedCash: z.number().min(0).max(999999999),
+  countedDebit: z.number().min(0).max(999999999),
+  countedCredit: z.number().min(0).max(999999999),
+  countedPix: z.number().min(0).max(999999999),
+  notes: z.string().trim().max(1000).optional(),
+});
+
 function errorMessage(error: unknown) {
   if (error instanceof Error && error.message) return error.message;
   return "Não foi possível concluir esta operação.";
@@ -104,5 +114,28 @@ export const commerceRouter = router({
           throw new TRPCError({ code: "BAD_REQUEST", message: errorMessage(error) });
         }
       }),
+  }),
+  cash: router({
+    summary: protectedProcedure.input(z.object({ closureDate: closureDateSchema })).query(async ({ input }) => {
+      try {
+        return await commerce.getCashSummary(input.closureDate);
+      } catch (error) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: errorMessage(error) });
+      }
+    }),
+    recentClosings: protectedProcedure.query(async () => {
+      try {
+        return await commerce.listCashClosings();
+      } catch (error) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: errorMessage(error) });
+      }
+    }),
+    closeDay: protectedProcedure.input(cashClosingInput).mutation(async ({ input, ctx }) => {
+      try {
+        return await commerce.closeCashDay({ ...input, closedBy: ctx.user.id });
+      } catch (error) {
+        throw new TRPCError({ code: "CONFLICT", message: errorMessage(error) });
+      }
+    }),
   }),
 });

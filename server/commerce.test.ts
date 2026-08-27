@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateCartTotals } from "./commerce";
+import { calculateCartTotals, calculateCashDifferences } from "./commerce";
 
 describe("calculateCartTotals", () => {
   it("soma itens unitários e fracionados com precisão monetária", () => {
@@ -28,5 +28,26 @@ describe("calculateCartTotals", () => {
     expect(result.total).toBe(26.25);
     expect(result.amountDue).toBe(6.25);
     expect(result.change).toBe(0);
+  });
+});
+
+describe("calculateCashDifferences", () => {
+  it("calcula as diferenças por forma de pagamento e o resultado geral", () => {
+    const result = calculateCashDifferences(
+      { closureDate: "2026-08-27", salesCount: 12, cash: 100, debit: 50, credit: 30, pix: 20, total: 200 },
+      { countedCash: 95, countedDebit: 50, countedCredit: 35, countedPix: 20 },
+    );
+
+    expect(result).toEqual({ cash: -5, debit: 0, credit: 5, pix: 0, total: 0 });
+  });
+
+  it("preserva precisão monetária quando o fechamento possui centavos", () => {
+    const result = calculateCashDifferences(
+      { closureDate: "2026-08-27", salesCount: 1, cash: 19.9, debit: 0, credit: 0, pix: 0, total: 19.9 },
+      { countedCash: 20, countedDebit: 0, countedCredit: 0, countedPix: 0 },
+    );
+
+    expect(result.cash).toBe(0.1);
+    expect(result.total).toBe(0.1);
   });
 });

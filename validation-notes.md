@@ -9,3 +9,5 @@ A frente de caixa foi revisada em desktop e mobile após a inclusão da redundâ
 A substituição para arquivo local foi revisada em desktop e mobile. O alerta de proteção local explica que o operador deve escolher uma pasta e cria o arquivo `pdv-local.json` nessa pasta, sem esconder o fluxo de leitura de código, carrinho ou finalização de venda.
 
 O comando manual **Sincronizar vendas** foi revisado no cabeçalho da frente de caixa. Ele fica visível somente no PDV e aciona a mesma fila idempotente usada na sincronização automática, apresentando mensagens claras para internet indisponível, ausência de pendências, sincronização em andamento e envio concluído.
+
+A tela de fechamento de caixa foi revisada em desktop e mobile. Os quatro meios de pagamento, os campos conferidos, as diferenças, as observações, o resumo geral e o histórico continuam visíveis e utilizáveis em uma largura de 375 px.

@@ -47,3 +47,8 @@
 - [x] Testar o acionamento manual sem duplicar vendas ou alterar itens já sincronizados.
 - [x] Avaliar atualizações de confiabilidade, segurança e operação da plataforma do PDV.
 - [x] Priorizar as melhorias recomendadas para as próximas versões do sistema.
+- [x] Modelar e aplicar o histórico de fechamentos diários no Supabase.
+- [x] Apurar vendas do dia por dinheiro, débito, crédito e Pix para conferência de caixa.
+- [x] Criar uma tela de fechamento com valores apurados, valores contados e diferenças.
+- [x] Registrar observações e o resultado do fechamento para consulta posterior.
+- [x] Testar os cálculos financeiros e a prevenção de fechamentos duplicados na mesma data.

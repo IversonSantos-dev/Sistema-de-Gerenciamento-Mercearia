@@ -3,6 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import {
   AlertTriangle,
   Archive,
+  CalendarCheck2,
   ChevronRight,
   FileSpreadsheet,
   LayoutDashboard,
@@ -24,6 +25,7 @@ const navigation = [
   { label: "Produtos", path: "/produtos", icon: PackageSearch },
   { label: "Importar planilha", path: "/importar", icon: FileSpreadsheet },
   { label: "Estoque baixo", path: "/estoque", icon: AlertTriangle },
+  { label: "Fechamento", path: "/fechamento", icon: CalendarCheck2 },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

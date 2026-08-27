@@ -19,6 +19,26 @@ export type SalePayload = {
   clientSaleId?: string;
 };
 
+export type CashSummary = {
+  closureDate: string;
+  salesCount: number;
+  cash: number;
+  debit: number;
+  credit: number;
+  pix: number;
+  total: number;
+};
+
+export type CashClosingPayload = {
+  closureDate: string;
+  countedCash: number;
+  countedDebit: number;
+  countedCredit: number;
+  countedPix: number;
+  notes?: string;
+  closedBy: number;
+};
+
 export type InventoryImportRow = {
   rowNumber: number;
   inventoryCode: string;
@@ -114,6 +134,26 @@ export function calculateCartTotals(items: Array<{ unitPrice: number; quantity: 
   const total = money(items.reduce((acc, item) => acc + money(item.unitPrice * item.quantity), 0));
   const paid = money(amountPaid);
   return { total, amountPaid: paid, change: Math.max(0, money(paid - total)), amountDue: Math.max(0, money(total - paid)) };
+}
+
+export function calculateCashDifferences(summary: CashSummary, counted: Pick<CashClosingPayload, "countedCash" | "countedDebit" | "countedCredit" | "countedPix">) {
+  const cash = money(counted.countedCash - summary.cash);
+  const debit = money(counted.countedDebit - summary.debit);
+  const credit = money(counted.countedCredit - summary.credit);
+  const pix = money(counted.countedPix - summary.pix);
+  return { cash, debit, credit, pix, total: money(cash + debit + credit + pix) };
+}
+
+function mapCashSummary(value: Record<string, unknown>, closureDate: string): CashSummary {
+  return {
+    closureDate: String(value.closureDate ?? closureDate),
+    salesCount: Number(value.salesCount ?? 0),
+    cash: money(toNumber(value.cash as string | number | null)),
+    debit: money(toNumber(value.debit as string | number | null)),
+    credit: money(toNumber(value.credit as string | number | null)),
+    pix: money(toNumber(value.pix as string | number | null)),
+    total: money(toNumber(value.total as string | number | null)),
+  };
 }
 
 export async function listProducts(search?: string) {
@@ -223,4 +263,42 @@ export async function finalizeSale(input: SalePayload) {
   ensureSupabaseSuccess(error);
   const result = typeof data === "string" ? JSON.parse(data) : data;
   return { saleId: Number(result.saleId), total: toNumber(result.total), amountPaid: toNumber(result.amountPaid), change: toNumber(result.change), clientSaleId: operationId };
+}
+
+export async function getCashSummary(closureDate: string) {
+  const { data, error } = await getSupabase().rpc("get_cash_summary", { p_closure_date: closureDate });
+  ensureSupabaseSuccess(error);
+  const result = typeof data === "string" ? JSON.parse(data) : data;
+  return mapCashSummary((result ?? {}) as Record<string, unknown>, closureDate);
+}
+
+export async function closeCashDay(input: CashClosingPayload) {
+  const { data, error } = await getSupabase().rpc("close_cash_day", {
+    p_closure_date: input.closureDate,
+    p_counted_cash: money(input.countedCash),
+    p_counted_debit: money(input.countedDebit),
+    p_counted_credit: money(input.countedCredit),
+    p_counted_pix: money(input.countedPix),
+    p_notes: input.notes?.trim() || "",
+    p_closed_by: input.closedBy,
+  });
+  ensureSupabaseSuccess(error);
+  const result = (typeof data === "string" ? JSON.parse(data) : data ?? {}) as Record<string, unknown>;
+  const summary = mapCashSummary(result, input.closureDate);
+  return { id: Number(result.id), closedAt: String(result.closedAt ?? new Date().toISOString()), summary, differences: calculateCashDifferences(summary, input) };
+}
+
+export async function listCashClosings() {
+  const { data, error } = await getSupabase().from("cash_closings").select("*").order("closure_date", { ascending: false }).limit(14);
+  ensureSupabaseSuccess(error);
+  return (data ?? []).map((closing: Record<string, unknown>) => ({
+    id: Number(closing.id),
+    closureDate: String(closing.closure_date),
+    expectedTotal: money(toNumber(closing.expected_cash as string | number) + toNumber(closing.expected_debit as string | number) + toNumber(closing.expected_credit as string | number) + toNumber(closing.expected_pix as string | number)),
+    countedTotal: money(toNumber(closing.counted_cash as string | number) + toNumber(closing.counted_debit as string | number) + toNumber(closing.counted_credit as string | number) + toNumber(closing.counted_pix as string | number)),
+    differenceTotal: money(toNumber(closing.difference_total as string | number)),
+    salesCount: Number(closing.sales_count ?? 0),
+    notes: closing.notes ? String(closing.notes) : null,
+    closedAt: String(closing.closed_at),
+  }));
 }
