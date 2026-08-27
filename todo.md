@@ -45,3 +45,5 @@
 - [x] Adicionar botão de sincronização manual para enviar vendas pendentes do arquivo local ao Supabase.
 - [x] Exibir retorno claro de sincronização manual, indisponibilidade de internet e ausência de pendências.
 - [x] Testar o acionamento manual sem duplicar vendas ou alterar itens já sincronizados.
+- [x] Avaliar atualizações de confiabilidade, segurança e operação da plataforma do PDV.
+- [x] Priorizar as melhorias recomendadas para as próximas versões do sistema.
