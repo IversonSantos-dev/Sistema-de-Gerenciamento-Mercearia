@@ -33,3 +33,12 @@
 - [x] Exibir na frente de caixa o estado online/offline e a quantidade de operações aguardando envio.
 - [x] Testar a recuperação de conexão e documentar o painel de manutenção do Supabase.
 - [x] Validar visualmente os indicadores de conexão e sincronização da frente de caixa em desktop e mobile.
+- [x] Substituir a cópia local no navegador por um armazenamento em arquivos locais do computador do caixa.
+- [x] Adotar pasta autorizada e arquivo local em vez de serviço local instalado, conforme a opção escolhida para um único caixa.
+- [x] Integrar a sincronização idempotente dos arquivos locais com o Supabase quando a internet retornar.
+- [x] Remover o IndexedDB como armazenamento de dados comerciais, mantendo-o somente para recordar a autorização da pasta.
+- [x] Criar instruções de ativação e backup do arquivo local do caixa.
+- [x] Implementar a seleção autorizada de pasta local via File System Access API no navegador do caixa.
+- [x] Persistir catálogo e vendas pendentes no arquivo pdv-local.json escolhido pelo operador.
+- [x] Substituir a fila baseada em IndexedDB pela leitura e escrita do arquivo local autorizado.
+- [x] Orientar o operador a autorizar a pasta do PDV antes da primeira operação offline.

@@ -8,15 +8,15 @@ O banco principal do sistema é o projeto **Mercearia PDV**, hospedado no Supaba
 |---|---|---|
 | Consultar ou corrigir cadastro de produto | **Table Editor → products** | Use para nome, preço, código de barras e estoque mínimo. Para ajustes de estoque, prefira criar uma rotina de ajuste no sistema para preservar o histórico. |
 | Conferir vendas realizadas | **Table Editor → sales** e **sale_items** | `sales` registra totais e pagamento; `sale_items` registra cada item vendido. Não altere uma venda concluída. |
-| Consultar pendências de sincronização | Frente de caixa | O indicador mostra vendas mantidas localmente que aguardam o retorno da internet. |
+| Consultar pendências de sincronização | Frente de caixa | O indicador mostra vendas guardadas no arquivo local que aguardam o retorno da internet. |
 | Revisar erros técnicos | **Logs** | Use os filtros do painel para verificar falhas de banco ou requisições. |
 | Rotacionar chave do servidor | **Settings → API Keys** | Crie uma nova chave secreta, atualize a configuração do sistema e só então exclua a chave antiga. Nunca exponha uma chave `sb_secret_...` no navegador. |
 
 ## Funcionamento sem internet
 
-O caixa guarda uma cópia local do catálogo e as vendas pendentes no navegador do computador de operação. Quando não houver internet, vendas são concluídas localmente e o estoque da cópia local é reduzido. Na reconexão, cada venda é reenviada com um identificador único; o banco principal reconhece uma repetição e impede que uma venda seja registrada duas vezes.
+Antes de usar o modo offline pela primeira vez, abra o PDV e selecione **Escolher pasta**. O sistema cria o arquivo `pdv-local.json` na pasta autorizada. Esse arquivo guarda a cópia local do catálogo e as vendas pendentes; quando não houver internet, as vendas são registradas no arquivo e o estoque da cópia local é reduzido. Na reconexão, cada venda é reenviada com um identificador único; o banco principal reconhece uma repetição e impede que uma venda seja registrada duas vezes.
 
-> A cópia local pertence a este navegador e computador. Não limpe os dados do navegador enquanto houver vendas pendentes e mantenha o mesmo computador configurado para o caixa.
+> Os dados comerciais de contingência ficam no arquivo local escolhido pelo operador, e não no armazenamento interno do navegador. O navegador conserva apenas a autorização da pasta para evitar que ela seja solicitada em toda abertura. Não mova, renomeie ou apague `pdv-local.json` enquanto houver vendas pendentes.
 
 ## Plano gratuito
 
