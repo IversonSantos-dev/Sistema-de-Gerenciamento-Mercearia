@@ -1,0 +1,5 @@
+{
+  "project_id": "fmatopzoavmgazrbruua",
+  "name": "restrict_cash_closing_function_execution",
+  "query": "REVOKE ALL ON FUNCTION public.close_cash_day(date, numeric, numeric, numeric, numeric, text, bigint) FROM PUBLIC, anon, authenticated;\nGRANT EXECUTE ON FUNCTION public.close_cash_day(date, numeric, numeric, numeric, numeric, text, bigint) TO service_role;"
+}

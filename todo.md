@@ -91,3 +91,13 @@
 - [x] Cobrir o conflito de PLU duplicado na atualização de produtos por peso.
 - [x] Validar a atualização do estado da listagem após salvar ou remover um PLU.
 - [x] Revisar a interface aberta de gestão de PLUs em desktop e celular.
+- [x] Revisar o fluxo de autenticação atual e definir a transição para login próprio por credencial.
+- [x] Criar estrutura segura para usuários operacionais e credenciais protegidas por hash.
+- [x] Implementar tela de login, criação inicial controlada e proteção de sessão nas rotas do PDV.
+- [x] Testar login, logout, credencial inválida e bloqueio das áreas protegidas.
+- [x] Restringir explicitamente a execução pública da função de fechamento de caixa no Supabase.
+- [x] Permitir que a sessão autenticada do proprietário configure o primeiro acesso local sem depender da chave de ativação.
+- [x] Corrigir a interface para dispensar a chave de ativação somente para a sessão real do proprietário.
+- [x] Testar a configuração inicial assistida pelo proprietário e a exigência de chave para outros administradores.
+- [x] Testar que o proprietário cria o primeiro acesso local sem chave de ativação.
+- [x] Testar que outro administrador não cria o acesso local sem chave válida.

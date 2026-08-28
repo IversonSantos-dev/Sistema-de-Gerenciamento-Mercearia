@@ -20,6 +20,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "./ui/button";
 import ReceiptCenter from "./ReceiptCenter";
+import { LocalLoginCard } from "./LocalLoginCard";
 
 const navigation = [
   { label: "Visão geral", path: "/", icon: LayoutDashboard },
@@ -40,22 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   if (!user) {
-    return (
-      <main className="min-h-screen grid place-items-center bg-[#f7f8f5] px-6">
-        <section className="w-full max-w-md rounded-3xl border border-[#dfe4d9] bg-white p-8 text-center shadow-[0_16px_50px_rgba(32,45,28,0.08)]">
-          <div className="mx-auto mb-6 grid size-12 place-items-center rounded-2xl bg-[#193c32] text-[#d7f0b5]">
-            <Store className="size-6" />
-          </div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#5b7163]">Mercearia PDV</p>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-[#15261f]">Acesse sua operação</h1>
-          <p className="mt-3 text-sm leading-6 text-[#64736b]">Entre para gerenciar produtos, acompanhar o estoque e operar o caixa.</p>
-          <Button onClick={() => startLogin()} className="mt-7 h-11 w-full rounded-xl bg-[#193c32] font-semibold hover:bg-[#245542]">
-            Entrar no sistema
-            <ChevronRight className="ml-1 size-4" />
-          </Button>
-        </section>
-      </main>
-    );
+    return <LocalLoginCard />;
   }
 
   return (

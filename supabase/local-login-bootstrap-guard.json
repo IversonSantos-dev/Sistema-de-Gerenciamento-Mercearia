@@ -1,0 +1,5 @@
+{
+  "project_id": "fmatopzoavmgazrbruua",
+  "name": "local_login_bootstrap_guard",
+  "query": "CREATE UNIQUE INDEX IF NOT EXISTS users_single_local_admin_idx ON public.users ((1)) WHERE username IS NOT NULL AND role = 'admin';"
+}
