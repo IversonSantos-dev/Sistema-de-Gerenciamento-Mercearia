@@ -37,3 +37,21 @@ A rota pública `/login` foi revisada em desktop e em 375 px. A primeira configu
 O estado de configuração assistida agora é enviado pelo servidor com base na comparação entre a identidade autenticada e a identidade real do proprietário, e não apenas pela função de administrador. Os testes confirmam que somente o proprietário recebe `ownerAssistedSetup: true`; outro administrador continua recebendo `false` e, portanto, precisa informar a chave de ativação para a configuração inicial.
 
 O fluxo de configuração foi exercitado diretamente pelo roteador. A sessão do proprietário cria o primeiro administrador local sem enviar chave de ativação e recebe a sessão protegida; uma sessão administrativa diferente é recusada antes da criação se não apresentar uma chave válida. Essa cobertura evita que a interface e a regra do servidor tratem administradores distintos como se fossem o proprietário do sistema.
+
+## Importação de NF-e por XML
+
+A entrada foi implementada no fluxo **Produtos → Cadastrar produto → Importar NF-e**. O parser lê XML autorizado localmente, normaliza chave de 44 dígitos, fornecedor, número, série, data, total, GTIN, descrição, unidade, quantidade e custo unitário. A prévia permite alterar quantidade e custo; itens associados são selecionados por produto existente e itens novos exigem preço de venda antes da confirmação.
+
+A entrada confirmada usa a função transacional `import_nfe_entry`, com chave única da NF-e, itens vinculados, soma ao estoque, atualização do custo e movimentação `nfe_entry` ligada à nota. A mutação tRPC foi testada para sucesso, duplicidade e produto novo sem preço de venda. Também foi executada uma chamada real reversível no Supabase com produto e usuário existentes; a transação foi revertida e uma consulta posterior confirmou que a chave de teste não permaneceu no banco. Não foram inseridos dados comerciais de demonstração.
+
+O escopo atual é deliberadamente **XML autorizado por upload**. Não há consulta automática por chave nem scraping do portal do governo. GTIN ausente ou inválido gera aviso para revisão; produto sem correspondência pode ser cadastrado durante a prévia, desde que o preço de venda seja informado. Lote e validade não são importados porque o modelo atual de produtos não possui campos para isso; essa extensão deve ser tratada separadamente se for necessária.
+
+## Importação de NF-e por XML
+
+A entrada foi implementada no fluxo **Produtos → Cadastrar produto → Importar NF-e**. O parser lê XML autorizado localmente, normaliza chave de 44 dígitos, fornecedor, número, série, data, total, GTIN, descrição, unidade, quantidade e custo unitário. A prévia permite alterar quantidade e custo; itens associados são selecionados por produto existente e itens novos exigem preço de venda informado pelo operador, sem sugestão automática.
+
+A entrada confirmada usa a função transacional `import_nfe_entry`, com chave única da NF-e, itens vinculados, soma ao estoque, atualização do custo e movimentação `nfe_entry` ligada à nota. O roteador tRPC foi testado para sucesso, duplicidade e produto novo sem preço de venda. A função real também foi exercitada no Supabase com usuário e produto existentes dentro de uma transação reversível; a chamada terminou sem erro, foi revertida e a consulta posterior confirmou que a chave de teste não permaneceu no banco. A estrutura foi conferida sem inserir dados comerciais persistentes.
+
+O escopo atual é deliberadamente **XML autorizado por upload**. Não há consulta automática por chave nem scraping do portal do governo. GTIN ausente ou inválido gera aviso para revisão; produto sem correspondência pode ser cadastrado durante a prévia, desde que o preço de venda seja informado. Lote e validade não são importados porque o modelo atual de produtos não possui campos para isso; essa extensão deve ser tratada separadamente se for necessária.
+
+A validação final executou `pnpm check` e a suíte completa: **18 arquivos de teste e 54 testes aprovados**. A escolha de cadastro do catálogo foi revisada em desktop e celular após a inclusão da opção de NF-e.

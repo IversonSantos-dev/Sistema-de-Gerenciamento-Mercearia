@@ -65,6 +65,29 @@ export type InventoryImportRow = {
   unitPrice: number;
 };
 
+export type NfeEntryItem = {
+  productId: number | null;
+  productCode: string;
+  barcode?: string | null;
+  name: string;
+  unit: "un" | "kg";
+  quantity: number;
+  unitCost: number;
+  salePrice?: number;
+};
+
+export type NfeEntryPayload = {
+  accessKey: string;
+  invoiceNumber: string;
+  series?: string | null;
+  issueDate?: string | null;
+  supplierName: string;
+  supplierDocument?: string | null;
+  totalAmount: number;
+  importedBy: number;
+  items: NfeEntryItem[];
+};
+
 type SupabaseProduct = {
   id: number;
   name: string;
@@ -382,6 +405,29 @@ export async function importInventory(items: InventoryImportRow[], stockMinimum:
     ensureSupabaseSuccess(error);
   }
   return { created: createRows.length, updated: updateRows.length, rejected: errors.length, errors: errors.slice(0, 30) };
+}
+
+export async function importNfeEntry(input: NfeEntryPayload) {
+  if (!/^\d{44}$/.test(input.accessKey)) throw new Error("A chave de acesso da NF-e deve conter 44 dígitos.");
+  if (!input.items.length) throw new Error("A NF-e precisa possuir ao menos um item.");
+  for (const item of input.items) {
+    if (item.quantity <= 0 || item.unitCost < 0) throw new Error(`Item inválido na NF-e: ${item.productCode}`);
+    if (item.productId === null && (!Number.isFinite(item.salePrice) || Number(item.salePrice) <= 0)) throw new Error(`Informe o preço de venda para o novo produto ${item.name}.`);
+  }
+  const { data, error } = await getSupabase().rpc("import_nfe_entry", {
+    p_access_key: input.accessKey,
+    p_invoice_number: input.invoiceNumber.trim(),
+    p_series: input.series?.trim() || null,
+    p_issue_date: input.issueDate || null,
+    p_supplier_name: input.supplierName.trim(),
+    p_supplier_document: input.supplierDocument?.trim() || null,
+    p_total_amount: money(input.totalAmount),
+    p_user_id: input.importedBy,
+    p_items: input.items.map(item => ({ productId: item.productId, productCode: item.productCode.trim(), barcode: item.barcode?.trim() || null, name: item.name.trim(), unit: item.unit, quantity: quantity(item.quantity), unitCost: money(item.unitCost), salePrice: item.salePrice === undefined ? null : money(item.salePrice) })),
+  });
+  ensureSupabaseSuccess(error);
+  const result = (typeof data === "string" ? JSON.parse(data) : data ?? {}) as Record<string, unknown>;
+  return { entryId: Number(result.entryId), createdProducts: Number(result.createdProducts ?? 0), updatedProducts: Number(result.updatedProducts ?? 0) };
 }
 
 export async function listLowStockProducts() {

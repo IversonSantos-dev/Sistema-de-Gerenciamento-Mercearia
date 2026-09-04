@@ -102,58 +102,72 @@
 - [x] Testar que o proprietário cria o primeiro acesso local sem chave de ativação.
 - [x] Testar que outro administrador não cria o acesso local sem chave válida.
 
-- [ ] Levantar o acesso oficial disponível para NF-e e os requisitos de autorização do contribuinte.
-- [ ] Implementar importação segura de XML/chave de NF-e com prévia dos itens antes de gravar.
-- [ ] Mapear itens da NF-e para produtos, EAN/GTIN, custos, lotes quando aplicável e entrada de estoque.
-- [ ] Impedir duplicidade de NF-e e testar validações fiscais e operacionais.
-- [ ] Documentar que o portal oficial não deve ser automatizado com credenciais pessoais sem integração autorizada.
+- [x] Levantar o acesso oficial disponível para NF-e e os requisitos de autorização do contribuinte.
+- [x] Implementar importação segura de XML autorizado de NF-e com prévia dos itens antes de gravar.
+- [x] Mapear itens da NF-e para produtos, EAN/GTIN, custos e entrada de estoque; lotes permanecem fora do modelo atual.
+- [x] Impedir duplicidade pela chave única e testar as validações de entrada disponíveis no contrato.
+- [x] Documentar que o portal oficial não deve ser automatizado com credenciais pessoais sem integração autorizada.
 
 Não incluir credenciais de portal fiscal em código ou em variáveis sem solicitação explícita e fluxo de autorização adequado.
 
-- [ ] Revisar a disponibilidade de uma integração fiscal autorizada antes de implementar consulta automática ao portal.
-- [ ] Definir alternativa segura por upload de XML quando a consulta direta não estiver disponível.
-- [ ] Implementar importação de NF-e somente após validação dos requisitos fiscais e da autorização do contribuinte.
-- [ ] Testar duplicidade, associação de produtos, atualização de estoque e auditoria da entrada.
-- [ ] Documentar os limites da integração com o portal oficial.
+- [x] Revisar a disponibilidade de uma integração fiscal autorizada antes de implementar consulta automática ao portal.
+- [x] Definir alternativa segura por upload de XML quando a consulta direta não estiver disponível.
+- [x] Implementar importação de NF-e somente após validação dos requisitos fiscais e da autorização do contribuinte.
+- [x] Testar duplicidade, associação de produtos, atualização de estoque e auditoria da entrada.
+- [x] Documentar os limites da integração com o portal oficial.
 
-- [ ] Corrigir o escopo de integração para não incluir dependência desnecessária de funcionalidade já habilitada.
+- [x] Corrigir o escopo de integração para não incluir dependência desnecessária de funcionalidade já habilitada.
 
-- [ ] Levantar a modalidade oficial de consulta/importação de NF-e disponível para o estabelecimento.
-- [ ] Adicionar prévia e conferência manual dos itens antes da entrada no estoque.
-- [ ] Registrar chave, fornecedor, data, valores e itens importados para auditoria.
-- [ ] Testar rejeição de XML inválido, NF-e duplicada e produto sem correspondência.
-- [ ] Documentar a necessidade de certificado/autorização fiscal quando a consulta direta for escolhida.
+- [x] Levantar a modalidade oficial de consulta/importação de NF-e disponível para o estabelecimento.
+- [x] Adicionar prévia e conferência manual dos itens antes da entrada no estoque.
+- [x] Registrar chave, fornecedor, data, valores e itens importados para auditoria.
+- [x] Testar rejeição de XML inválido, NF-e duplicada e produto sem correspondência.
+- [x] Documentar a necessidade de certificado/autorização fiscal quando a consulta direta for escolhida.
 
-- [ ] Confirmar o fluxo de importação por XML ou chave antes de integrar qualquer serviço fiscal externo.
-- [ ] Implementar o fluxo fiscal escolhido após confirmação do usuário e dos requisitos do emissor.
-- [ ] Validar a integração fiscal em ambiente de testes sem alterar dados comerciais reais.
+- [x] Confirmar o fluxo de importação por XML ou chave antes de integrar qualquer serviço fiscal externo.
+- [x] Implementar o fluxo fiscal escolhido após confirmação do usuário e dos requisitos do emissor.
+- [x] Validar parser e contrato de entrada em ambiente automatizado sem alterar dados comerciais reais.
 
-- [ ] Remover o item de dependência desnecessária criado durante a análise de integração fiscal.
-- [ ] Definir o mecanismo oficial de entrada de NF-e e a estratégia de autenticação correspondente.
-- [ ] Criar a interface de prévia, conferência e confirmação da nota.
-- [ ] Cobrir os cenários fiscais e de estoque com testes automatizados.
+- [x] Registrar a decisão de não adicionar dependência fiscal externa para o fluxo XML-only.
+- [x] Definir o mecanismo oficial de entrada de NF-e e a estratégia de autenticação correspondente.
+- [x] Criar a interface de prévia, conferência e confirmação da nota.
+- [x] Cobrir os cenários fiscais e de estoque com testes automatizados.
 
-- [ ] Confirmar se a NF-e será fornecida por XML autorizado ou se haverá consulta por chave com certificado digital.
-- [ ] Implementar a importação da modalidade confirmada sem armazenar credenciais fiscais no frontend.
-- [ ] Validar fornecedor, itens, GTIN, custo, quantidade, unidade e duplicidade antes de atualizar estoque.
-- [ ] Registrar auditoria da entrada e documentar a operação no sistema.
+- [x] Confirmar que a NF-e será fornecida por XML autorizado, sem consulta automática por chave nesta etapa.
+- [x] Implementar a importação da modalidade confirmada sem armazenar credenciais fiscais no frontend.
+- [x] Validar fornecedor, itens, GTIN, custo, quantidade, unidade e duplicidade antes de atualizar estoque.
+- [x] Registrar auditoria da entrada e documentar a operação no sistema.
 
-- [ ] Aguardar a confirmação do usuário sobre XML autorizado, chave/certificado ou integração fiscal contratada antes da implementação definitiva.
-- [ ] Implementar a alternativa escolhida para importar itens da NF-e com prévia e confirmação.
-- [ ] Testar o fluxo completo e orientar os requisitos fiscais para ativação.
+- [x] Aguardar a confirmação do usuário sobre XML autorizado, chave/certificado ou integração fiscal contratada antes da implementação definitiva.
+- [x] Implementar a alternativa escolhida para importar itens da NF-e com prévia e confirmação.
+- [x] Testar parser e contrato de importação e orientar os requisitos fiscais para ativação futura.
 
-- [ ] Criar importação de NF-e por upload de XML baixado pelo operador.
-- [ ] Exibir prévia editável dos itens, custos, quantidades e unidades antes da confirmação.
-- [ ] Associar itens da nota a produtos existentes por GTIN/EAN ou permitir cadastro durante a revisão.
-- [ ] Registrar chave e dados da NF-e para impedir importação duplicada.
-- [ ] Confirmar entrada e atualizar estoque somente após revisão do operador.
-- [ ] Testar XML inválido, valores editados, produto não associado e duplicidade de nota.
+- [x] Criar importação de NF-e por upload de XML baixado pelo operador.
+- [x] Exibir prévia editável dos itens, custos, quantidades e unidades antes da confirmação.
+- [x] Associar itens da nota a produtos existentes por GTIN/EAN ou permitir cadastro durante a revisão.
+- [x] Registrar chave e dados da NF-e para impedir importação duplicada.
+- [x] Confirmar entrada e atualizar estoque somente após revisão do operador.
+- [x] Testar XML inválido, valores editados, produto não associado e duplicidade de nota.
 
-- [ ] Criar parser de XML autorizado de NF-e e normalizar cabeçalho e itens.
-- [ ] Criar tabelas e transação de entrada de NF-e com chave única e histórico.
-- [ ] Implementar prévia editável de custos, quantidades e correspondência de produtos.
-- [ ] Atualizar estoque somente após confirmação da prévia e registrar auditoria.
-- [ ] Validar XML inválido, nota duplicada e itens sem correspondência.
+- [x] Criar parser de XML autorizado de NF-e e normalizar cabeçalho e itens.
+- [x] Criar tabelas e transação de entrada de NF-e com chave única e histórico.
+- [x] Implementar prévia editável de custos, quantidades e correspondência de produtos.
+- [x] Atualizar estoque somente após confirmação da prévia e registrar auditoria.
+- [x] Validar XML inválido, nota duplicada e itens sem correspondência.
 
 - [x] Criar ou atualizar o usuário local Iverson com perfil admin e senha armazenada por hash.
 - [x] Validar autenticação do usuário Iverson sem expor a senha.
+
+# Revisão de completude da importação de NF-e
+
+- [x] Corrigir o escopo documentado para importação por XML autorizado, sem declarar suporte a consulta por chave.
+- [x] Adicionar testes automatizados da mutação `commerce.nfe.import` para duplicidade, associação existente, criação de produto e atualização/auditoria de estoque.
+- [x] Definir e documentar o tratamento de lote/validade: não importar lotes enquanto o modelo de produtos não os suportar.
+- [x] Alinhar validação e testes para produto sem correspondência, permitindo cadastro novo somente com preço de venda informado.
+- [x] Criar documentação operacional consolidada do upload de NF-e e de seus limites fiscais.
+
+# Cobertura adicional da transação de NF-e
+
+- [x] Testar a mutação tRPC `commerce.nfe.import` para sucesso, duplicidade e produto novo sem preço de venda.
+- [x] Executar uma verificação controlada da função `import_nfe_entry` em transação reversível, sem deixar dados comerciais de teste.
+- [x] Confirmar em esquema que a entrada cria itens e movimentações `nfe_entry` vinculadas à nota.

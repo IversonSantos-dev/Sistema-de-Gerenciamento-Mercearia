@@ -35,6 +35,32 @@ const inventoryImportItem = z.object({
   unitPrice: z.number().positive().max(999999999),
 });
 
+const nfeEntryItem = z.object({
+  productId: z.number().int().positive().nullable(),
+  productCode: z.string().trim().min(1).max(120),
+  barcode: z.string().trim().max(14).optional().nullable(),
+  name: z.string().trim().min(2).max(255),
+  unit: z.enum(["un", "kg"]),
+  quantity: z.number().positive().max(999999999),
+  unitCost: z.number().min(0).max(999999999),
+  salePrice: z.number().positive().max(999999999).optional(),
+});
+
+const nfeEntryInput = z.object({
+  accessKey: z.string().regex(/^\d{44}$/, "A chave de acesso deve possuir 44 dígitos."),
+  invoiceNumber: z.string().trim().min(1).max(40),
+  series: z.string().trim().max(20).optional().nullable(),
+  issueDate: z.string().datetime().optional().nullable(),
+  supplierName: z.string().trim().min(1).max(255),
+  supplierDocument: z.string().trim().max(18).optional().nullable(),
+  totalAmount: z.number().min(0).max(999999999),
+  items: z.array(nfeEntryItem).min(1).max(500).superRefine((items, context) => {
+    items.forEach((item, index) => {
+      if (item.productId === null && item.salePrice === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: [index, "salePrice"], message: "Informe o preço de venda para produto novo." });
+    });
+  }),
+});
+
 const categoryInput = z.object({
   name: z.string().trim().min(2, "Informe o nome da categoria.").max(120),
   stockMinimum: z.number().min(0).max(999999999),
@@ -131,6 +157,15 @@ export const commerceRouter = router({
           throw new TRPCError({ code: "BAD_REQUEST", message: errorMessage(error) });
         }
       }),
+  }),
+  nfe: router({
+    import: protectedProcedure.input(nfeEntryInput).mutation(async ({ input, ctx }) => {
+      try {
+        return await commerce.importNfeEntry({ ...input, importedBy: ctx.user.id });
+      } catch (error) {
+        throw new TRPCError({ code: "CONFLICT", message: errorMessage(error) });
+      }
+    }),
   }),
   scale: router({
     barcodeSettings: protectedProcedure.query(() => commerce.getScaleBarcodeSettings()),
