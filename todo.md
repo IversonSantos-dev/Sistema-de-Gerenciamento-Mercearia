@@ -101,3 +101,59 @@
 - [x] Testar a configuração inicial assistida pelo proprietário e a exigência de chave para outros administradores.
 - [x] Testar que o proprietário cria o primeiro acesso local sem chave de ativação.
 - [x] Testar que outro administrador não cria o acesso local sem chave válida.
+
+- [ ] Levantar o acesso oficial disponível para NF-e e os requisitos de autorização do contribuinte.
+- [ ] Implementar importação segura de XML/chave de NF-e com prévia dos itens antes de gravar.
+- [ ] Mapear itens da NF-e para produtos, EAN/GTIN, custos, lotes quando aplicável e entrada de estoque.
+- [ ] Impedir duplicidade de NF-e e testar validações fiscais e operacionais.
+- [ ] Documentar que o portal oficial não deve ser automatizado com credenciais pessoais sem integração autorizada.
+
+Não incluir credenciais de portal fiscal em código ou em variáveis sem solicitação explícita e fluxo de autorização adequado.
+
+- [ ] Revisar a disponibilidade de uma integração fiscal autorizada antes de implementar consulta automática ao portal.
+- [ ] Definir alternativa segura por upload de XML quando a consulta direta não estiver disponível.
+- [ ] Implementar importação de NF-e somente após validação dos requisitos fiscais e da autorização do contribuinte.
+- [ ] Testar duplicidade, associação de produtos, atualização de estoque e auditoria da entrada.
+- [ ] Documentar os limites da integração com o portal oficial.
+
+- [ ] Corrigir o escopo de integração para não incluir dependência desnecessária de funcionalidade já habilitada.
+
+- [ ] Levantar a modalidade oficial de consulta/importação de NF-e disponível para o estabelecimento.
+- [ ] Adicionar prévia e conferência manual dos itens antes da entrada no estoque.
+- [ ] Registrar chave, fornecedor, data, valores e itens importados para auditoria.
+- [ ] Testar rejeição de XML inválido, NF-e duplicada e produto sem correspondência.
+- [ ] Documentar a necessidade de certificado/autorização fiscal quando a consulta direta for escolhida.
+
+- [ ] Confirmar o fluxo de importação por XML ou chave antes de integrar qualquer serviço fiscal externo.
+- [ ] Implementar o fluxo fiscal escolhido após confirmação do usuário e dos requisitos do emissor.
+- [ ] Validar a integração fiscal em ambiente de testes sem alterar dados comerciais reais.
+
+- [ ] Remover o item de dependência desnecessária criado durante a análise de integração fiscal.
+- [ ] Definir o mecanismo oficial de entrada de NF-e e a estratégia de autenticação correspondente.
+- [ ] Criar a interface de prévia, conferência e confirmação da nota.
+- [ ] Cobrir os cenários fiscais e de estoque com testes automatizados.
+
+- [ ] Confirmar se a NF-e será fornecida por XML autorizado ou se haverá consulta por chave com certificado digital.
+- [ ] Implementar a importação da modalidade confirmada sem armazenar credenciais fiscais no frontend.
+- [ ] Validar fornecedor, itens, GTIN, custo, quantidade, unidade e duplicidade antes de atualizar estoque.
+- [ ] Registrar auditoria da entrada e documentar a operação no sistema.
+
+- [ ] Aguardar a confirmação do usuário sobre XML autorizado, chave/certificado ou integração fiscal contratada antes da implementação definitiva.
+- [ ] Implementar a alternativa escolhida para importar itens da NF-e com prévia e confirmação.
+- [ ] Testar o fluxo completo e orientar os requisitos fiscais para ativação.
+
+- [ ] Criar importação de NF-e por upload de XML baixado pelo operador.
+- [ ] Exibir prévia editável dos itens, custos, quantidades e unidades antes da confirmação.
+- [ ] Associar itens da nota a produtos existentes por GTIN/EAN ou permitir cadastro durante a revisão.
+- [ ] Registrar chave e dados da NF-e para impedir importação duplicada.
+- [ ] Confirmar entrada e atualizar estoque somente após revisão do operador.
+- [ ] Testar XML inválido, valores editados, produto não associado e duplicidade de nota.
+
+- [ ] Criar parser de XML autorizado de NF-e e normalizar cabeçalho e itens.
+- [ ] Criar tabelas e transação de entrada de NF-e com chave única e histórico.
+- [ ] Implementar prévia editável de custos, quantidades e correspondência de produtos.
+- [ ] Atualizar estoque somente após confirmação da prévia e registrar auditoria.
+- [ ] Validar XML inválido, nota duplicada e itens sem correspondência.
+
+- [x] Criar ou atualizar o usuário local Iverson com perfil admin e senha armazenada por hash.
+- [x] Validar autenticação do usuário Iverson sem expor a senha.
