@@ -6,4 +6,6 @@ Em um computador sem a sessão do proprietário, a mesma configuração exige a 
 
 Depois de criado o administrador local, os operadores devem entrar por `/login` com o usuário e a senha cadastrados. A aplicação armazena apenas o hash da senha. Após cinco tentativas incorretas, o usuário fica bloqueado por 15 minutos.
 
+O usuário local `iverson` é promovido automaticamente para `admin` quando o sistema consegue acessar o banco. Esse perfil pode abrir o painel **Usuários**, criar e editar acessos, bloquear ou desbloquear operadores, redefinir senhas e consultar as funções administrativas disponíveis.
+
 > A credencial inicial controla o acesso ao aplicativo; ela não substitui os usuários ou permissões do painel administrativo do Supabase.

