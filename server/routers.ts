@@ -1,20 +1,25 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { commerceRouter } from "./routers/commerce";
 import { validSetupKey } from "./auth/setupKey";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { authenticateLocalUser, createInitialLocalAdmin, localAccountStatus } from "./auth/localUsers";
+import { authenticateLocalUser, changeOwnPassword, createInitialLocalAdmin, createLocalUser, listLocalUsers, localAccountStatus, resetLocalUserPassword, updateLocalUser } from "./auth/localUsers";
 import { sdk } from "./_core/sdk";
 import { ENV } from "./_core/env";
 
 const localLoginInput = z.object({ username: z.string().trim().min(3).max(40), password: z.string().min(1).max(128) });
+const roleInput = z.enum(["user", "admin"]);
 
-async function createLocalSession(ctx: { res: { cookie: (name: string, value: string, options: object) => unknown; }; req: Parameters<typeof getSessionCookieOptions>[0]; }, user: { openId: string; name: string | null; username: string | null }) {
+async function createLocalSession(ctx: { res: { cookie: (name: string, value: string, options: object) => unknown }; req: Parameters<typeof getSessionCookieOptions>[0] }, user: { openId: string; name: string | null; username: string | null }) {
   const token = await sdk.createSessionToken(user.openId, { name: user.name || user.username || "Operador" });
   ctx.res.cookie(COOKIE_NAME, token, getSessionCookieOptions(ctx.req));
+}
+
+function badRequest(error: unknown, fallback: string): never {
+  throw new TRPCError({ code: "BAD_REQUEST", message: error instanceof Error ? error.message : fallback });
 }
 
 export const appRouter = router({
@@ -30,23 +35,34 @@ export const appRouter = router({
         const user = await createInitialLocalAdmin(input);
         await createLocalSession(ctx, user);
         return { user };
-      } catch (error) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: error instanceof Error ? error.message : "Não foi possível configurar o acesso." });
-      }
+      } catch (error) { badRequest(error, "Não foi possível configurar o acesso."); }
     }),
     loginLocal: publicProcedure.input(localLoginInput).mutation(async ({ input, ctx }) => {
       try {
         const user = await authenticateLocalUser(input);
         await createLocalSession(ctx, user);
         return { user };
-      } catch (error) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: error instanceof Error ? error.message : "Não foi possível entrar." });
-      }
+      } catch (error) { throw new TRPCError({ code: "UNAUTHORIZED", message: error instanceof Error ? error.message : "Não foi possível entrar." }); }
     }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
+    }),
+    users: router({
+      list: adminProcedure.query(() => listLocalUsers()),
+      create: adminProcedure.input(z.object({ name: z.string().trim().max(100), username: z.string().trim().min(3).max(40), password: z.string().min(1).max(128), role: roleInput })).mutation(async ({ input }) => {
+        try { return await createLocalUser(input); } catch (error) { badRequest(error, "Não foi possível criar o usuário."); }
+      }),
+      update: adminProcedure.input(z.object({ id: z.number().int().positive(), name: z.string().trim().max(100), username: z.string().trim().min(3).max(40), role: roleInput, active: z.boolean() })).mutation(async ({ input, ctx }) => {
+        try { return await updateLocalUser({ ...input, actorId: ctx.user.id }); } catch (error) { badRequest(error, "Não foi possível atualizar o usuário."); }
+      }),
+      resetPassword: adminProcedure.input(z.object({ id: z.number().int().positive(), password: z.string().min(1).max(128) })).mutation(async ({ input }) => {
+        try { return await resetLocalUserPassword(input); } catch (error) { badRequest(error, "Não foi possível alterar a senha."); }
+      }),
+      changePassword: protectedProcedure.input(z.object({ currentPassword: z.string().min(1).max(128), newPassword: z.string().min(1).max(128) })).mutation(async ({ input, ctx }) => {
+        try { return await changeOwnPassword({ id: ctx.user.id, ...input }); } catch (error) { badRequest(error, "Não foi possível alterar sua senha."); }
+      }),
     }),
   }),
   commerce: commerceRouter,
