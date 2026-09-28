@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as commerce from "../commerce";
-import { protectedProcedure, router } from "../_core/trpc";
+import { permissionProcedure, protectedProcedure, router } from "../_core/trpc";
 
 const barcodeSchema = z
   .string()
@@ -82,7 +82,7 @@ function errorMessage(error: unknown) {
 }
 
 export const commerceRouter = router({
-  dashboard: protectedProcedure.query(async () => {
+  dashboard: permissionProcedure("dashboard", "read").query(async () => {
     try {
       return await commerce.getDashboardSummary();
     } catch (error) {
@@ -90,38 +90,38 @@ export const commerceRouter = router({
     }
   }),
   categories: router({
-    list: protectedProcedure.query(() => commerce.listCategories()),
-    create: protectedProcedure.input(categoryInput).mutation(async ({ input }) => {
+    list: permissionProcedure("products", "read").query(() => commerce.listCategories()),
+    create: permissionProcedure("products", "edit").input(categoryInput).mutation(async ({ input }) => {
       try { return await commerce.createCategory(input); }
       catch (error) { throw new TRPCError({ code: "CONFLICT", message: errorMessage(error) }); }
     }),
-    update: protectedProcedure.input(z.object({ id: z.number().int().positive(), data: categoryInput })).mutation(async ({ input }) => {
+    update: permissionProcedure("products", "edit").input(z.object({ id: z.number().int().positive(), data: categoryInput })).mutation(async ({ input }) => {
       try { return await commerce.updateCategory(input.id, input.data); }
       catch (error) { throw new TRPCError({ code: "CONFLICT", message: errorMessage(error) }); }
     }),
   }),
   products: router({
-    list: protectedProcedure
+    list: permissionProcedure("products", "read")
       .input(z.object({ search: z.string().trim().max(120).optional(), categoryId: z.number().int().positive().optional() }).optional())
       .query(async ({ input }) => commerce.listProducts(input?.search, input?.categoryId)),
-    lowStock: protectedProcedure.query(() => commerce.listLowStockProducts()),
-    byBarcode: protectedProcedure
+    lowStock: permissionProcedure("stock", "read").query(() => commerce.listLowStockProducts()),
+    byBarcode: permissionProcedure("products", "read")
       .input(z.object({ barcode: z.string().trim().min(1).max(32) }))
       .query(({ input }) => commerce.getProductByBarcode(input.barcode)),
-    byScalePlu: protectedProcedure
+    byScalePlu: permissionProcedure("plu", "read")
       .input(z.object({ scalePlu: z.number().int().positive().max(999999) }))
       .query(({ input }) => commerce.getProductByScalePlu(input.scalePlu)),
-    weightProductsForScale: protectedProcedure
+    weightProductsForScale: permissionProcedure("plu", "read")
       .input(z.object({ search: z.string().trim().max(120).optional() }).optional())
       .query(({ input }) => commerce.listWeightProductsForScalePlu(input?.search)),
-    create: protectedProcedure.input(productInput).mutation(async ({ input }) => {
+    create: permissionProcedure("products", "edit").input(productInput).mutation(async ({ input }) => {
       try {
         return await commerce.createProduct(input);
       } catch (error) {
         throw new TRPCError({ code: "CONFLICT", message: errorMessage(error) });
       }
     }),
-    update: protectedProcedure
+    update: permissionProcedure("products", "edit")
       .input(z.object({ id: z.number().int().positive(), data: productInput }))
       .mutation(async ({ input }) => {
         try {
@@ -130,7 +130,7 @@ export const commerceRouter = router({
           throw new TRPCError({ code: "CONFLICT", message: errorMessage(error) });
         }
       }),
-    adjustStock: protectedProcedure
+    adjustStock: permissionProcedure("stock", "edit")
       .input(z.object({ productId: z.number().int().positive(), newQuantity: z.number().min(0).max(999999999), reason: z.string().trim().max(300).optional() }))
       .mutation(async ({ input, ctx }) => {
         try {
@@ -139,7 +139,7 @@ export const commerceRouter = router({
           throw new TRPCError({ code: "BAD_REQUEST", message: errorMessage(error) });
         }
       }),
-    updateScalePlu: protectedProcedure
+    updateScalePlu: permissionProcedure("plu", "edit")
       .input(z.object({ productId: z.number().int().positive(), scalePlu: z.number().int().positive().max(999999).nullable() }))
       .mutation(async ({ input }) => {
         try {
@@ -148,7 +148,7 @@ export const commerceRouter = router({
           throw new TRPCError({ code: "BAD_REQUEST", message: errorMessage(error) });
         }
       }),
-    importInventory: protectedProcedure
+    importInventory: permissionProcedure("products", "edit")
       .input(z.object({ items: z.array(inventoryImportItem).min(1).max(1200), stockMinimum: z.number().min(0).max(999999999) }))
       .mutation(async ({ input }) => {
         try {
@@ -159,7 +159,7 @@ export const commerceRouter = router({
       }),
   }),
   nfe: router({
-    import: protectedProcedure.input(nfeEntryInput).mutation(async ({ input, ctx }) => {
+    import: permissionProcedure("nfe", "edit").input(nfeEntryInput).mutation(async ({ input, ctx }) => {
       try {
         return await commerce.importNfeEntry({ ...input, importedBy: ctx.user.id });
       } catch (error) {
@@ -168,18 +168,18 @@ export const commerceRouter = router({
     }),
   }),
   scale: router({
-    barcodeSettings: protectedProcedure.query(() => commerce.getScaleBarcodeSettings()),
+    barcodeSettings: permissionProcedure("plu", "read").query(() => commerce.getScaleBarcodeSettings()),
   }),
   sales: router({
-    recent: protectedProcedure.query(() => commerce.listRecentSales()),
-    receipt: protectedProcedure.input(z.object({ saleId: z.number().int().positive() })).query(async ({ input }) => {
+    recent: permissionProcedure("pos", "read").query(() => commerce.listRecentSales()),
+    receipt: permissionProcedure("pos", "read").input(z.object({ saleId: z.number().int().positive() })).query(async ({ input }) => {
       try {
         return await commerce.getSaleReceipt(input.saleId);
       } catch (error) {
         throw new TRPCError({ code: "NOT_FOUND", message: errorMessage(error) });
       }
     }),
-    finalize: protectedProcedure
+    finalize: permissionProcedure("pos", "edit")
       .input(
         z.object({
           items: z
@@ -204,21 +204,21 @@ export const commerceRouter = router({
       }),
   }),
   cash: router({
-    summary: protectedProcedure.input(z.object({ closureDate: closureDateSchema })).query(async ({ input }) => {
+    summary: permissionProcedure("cash", "read").input(z.object({ closureDate: closureDateSchema })).query(async ({ input }) => {
       try {
         return await commerce.getCashSummary(input.closureDate);
       } catch (error) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: errorMessage(error) });
       }
     }),
-    recentClosings: protectedProcedure.query(async () => {
+    recentClosings: permissionProcedure("cash", "read").query(async () => {
       try {
         return await commerce.listCashClosings();
       } catch (error) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: errorMessage(error) });
       }
     }),
-    closeDay: protectedProcedure.input(cashClosingInput).mutation(async ({ input, ctx }) => {
+    closeDay: permissionProcedure("cash", "edit").input(cashClosingInput).mutation(async ({ input, ctx }) => {
       try {
         return await commerce.closeCashDay({ ...input, closedBy: ctx.user.id });
       } catch (error) {

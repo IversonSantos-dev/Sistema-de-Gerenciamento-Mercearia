@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, permissionProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { commerceRouter } from "./routers/commerce";
 import { validSetupKey } from "./auth/setupKey";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import { TRPCError } from "@trpc/server";
 import { authenticateLocalUser, changeOwnPassword, createInitialLocalAdmin, createLocalUser, listLocalUsers, localAccountStatus, resetLocalUserPassword, updateLocalUser } from "./auth/localUsers";
 import { sdk } from "./_core/sdk";
 import { ENV } from "./_core/env";
+import { normalizePermissions } from "./auth/permissions";
 
 const localLoginInput = z.object({ username: z.string().trim().min(3).max(40), password: z.string().min(1).max(128) });
 const roleInput = z.enum(["user", "admin"]);
@@ -57,14 +58,14 @@ export const appRouter = router({
       return { success: true } as const;
     }),
     users: router({
-      list: adminProcedure.query(() => listLocalUsers()),
-      create: adminProcedure.input(z.object({ name: z.string().trim().max(100), username: z.string().trim().min(3).max(40), password: z.string().min(1).max(128), role: roleInput })).mutation(async ({ input }) => {
+      list: permissionProcedure("users", "read").query(() => listLocalUsers()),
+      create: permissionProcedure("users", "edit").input(z.object({ name: z.string().trim().max(100), username: z.string().trim().min(3).max(40), password: z.string().min(1).max(128), role: roleInput })).mutation(async ({ input }) => {
         try { return await createLocalUser(input); } catch (error) { badRequest(error, "Não foi possível criar o usuário."); }
       }),
-      update: adminProcedure.input(z.object({ id: z.number().int().positive(), name: z.string().trim().max(100), username: z.string().trim().min(3).max(40), role: roleInput, active: z.boolean() })).mutation(async ({ input, ctx }) => {
-        try { return await updateLocalUser({ ...input, actorId: ctx.user.id }); } catch (error) { badRequest(error, "Não foi possível atualizar o usuário."); }
+      update: permissionProcedure("users", "edit").input(z.object({ id: z.number().int().positive(), name: z.string().trim().max(100), username: z.string().trim().min(3).max(40), role: roleInput, active: z.boolean(), permissions: z.record(z.string(), z.object({ read: z.boolean(), edit: z.boolean() })).optional() })).mutation(async ({ input, ctx }) => {
+        try { return await updateLocalUser({ ...input, permissions: normalizePermissions(input.permissions, input.role), actorId: ctx.user.id }); } catch (error) { badRequest(error, "Não foi possível atualizar o usuário."); }
       }),
-      resetPassword: adminProcedure.input(z.object({ id: z.number().int().positive(), password: z.string().min(1).max(128) })).mutation(async ({ input }) => {
+      resetPassword: permissionProcedure("users", "edit").input(z.object({ id: z.number().int().positive(), password: z.string().min(1).max(128) })).mutation(async ({ input }) => {
         try { return await resetLocalUserPassword(input); } catch (error) { badRequest(error, "Não foi possível alterar a senha."); }
       }),
       changePassword: protectedProcedure.input(z.object({ currentPassword: z.string().min(1).max(128), newPassword: z.string().min(1).max(128) })).mutation(async ({ input, ctx }) => {

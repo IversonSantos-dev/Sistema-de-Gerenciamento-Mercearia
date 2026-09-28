@@ -1,4 +1,4 @@
-import { boolean, decimal, index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, decimal, index, int, json, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /** Usuários autenticados exclusivamente por credenciais locais. */
 export const users = mysqlTable("users", {
@@ -11,6 +11,7 @@ export const users = mysqlTable("users", {
   passwordHash: text("passwordHash"),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   active: boolean("active").default(true).notNull(),
+  permissions: json("permissions"),
   failedLoginAttempts: int("failedLoginAttempts").default(0).notNull(),
   lockedUntil: timestamp("lockedUntil"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

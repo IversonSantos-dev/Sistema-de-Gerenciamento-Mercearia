@@ -10,6 +10,9 @@ A aplicação usa **somente login local por usuário e senha**. Não há depend�
 - Após cinco tentativas inválidas, o usuário fica bloqueado temporariamente.
 - O primeiro administrador é criado com a chave de ativação configurada no ambiente.
 - Administradores acessam **Usuários** para criar operadores, alterar perfil, bloquear/desbloquear acessos e redefinir senhas.
+- A matriz de **Permissões por módulo** separa `Consultar` e `Editar` para visão geral, PDV, produtos, estoque, PLUs, NF-e, fechamento, usuários e configurações.
+- A autorização é verificada no servidor; esconder botões na interface não é usado como mecanismo de segurança.
+- Administradores novos começam com acesso total e podem ser restringidos. Administradores legados sem matriz explícita continuam com acesso total.
 - Cada usuário também pode alterar a própria senha informando a senha atual.
 - O sistema impede bloquear ou remover o último administrador ativo.
 
@@ -25,6 +28,8 @@ LOCAL_SETUP_KEY=uma-chave-para-o-primeiro-acesso
 ```
 
 O arquivo `pdv-local.json` continua sendo usado para a contingência local do caixa conforme a pasta autorizada pelo operador.
+
+Para atualizar uma base Supabase existente, execute `supabase/permissions-migration.sql` no SQL Editor antes de usar a matriz de permissões.
 
 ## Desenvolvimento
 
