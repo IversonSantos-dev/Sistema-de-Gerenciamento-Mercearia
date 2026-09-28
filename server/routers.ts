@@ -27,7 +27,14 @@ export const appRouter = router({
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     verifySetupKey: publicProcedure.input(z.object({ setupKey: z.string().min(1).max(256) })).mutation(({ input }) => ({ valid: validSetupKey(input.setupKey) })),
-    localStatus: publicProcedure.query(async ({ ctx }) => ({ ...(await localAccountStatus()), ownerAssistedSetup: Boolean(ENV.ownerOpenId) && ctx.user?.openId === ENV.ownerOpenId })),
+    localStatus: publicProcedure.query(async ({ ctx }) => {
+      try {
+        return { ...(await localAccountStatus()), ownerAssistedSetup: Boolean(ENV.ownerOpenId) && ctx.user?.openId === ENV.ownerOpenId };
+      } catch (error) {
+        console.error("[Auth] Banco indisponível ao verificar o acesso local:", error);
+        return { configured: false, available: false, ownerAssistedSetup: false, message: "Não foi possível conectar ao banco principal. Verifique a configuração do Supabase e tente novamente." };
+      }
+    }),
     setupLocalAdmin: publicProcedure.input(localLoginInput.extend({ name: z.string().trim().max(100), setupKey: z.string().min(1).max(256).optional() })).mutation(async ({ input, ctx }) => {
       const ownerSession = Boolean(ENV.ownerOpenId) && ctx.user?.openId === ENV.ownerOpenId;
       if (!ownerSession && !validSetupKey(input.setupKey ?? "")) throw new TRPCError({ code: "FORBIDDEN", message: "Chave de ativação inválida." });
